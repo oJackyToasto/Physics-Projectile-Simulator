@@ -9,23 +9,23 @@ let padding = 50;
 let offsetX = padding;
 let offsetY = canvas.height - padding;
 
-let drag = false, lastX, lastY;
+let dragCanvas = false, lastX, lastY;
 let scale = 10; // pixels per unit
 let gravity = 9.8;
 
 // ----- DRAGGING -----
 canvas.addEventListener("mousedown", e => {
-    drag = true;
+    dragCanvas = true;
     lastX = e.clientX;
     lastY = e.clientY;
     canvas.style.cursor = "grabbing";
 });
 canvas.addEventListener("mouseup", () => {
-    drag = false;
+    dragCanvas = false;
     canvas.style.cursor = "grab";
 });
 canvas.addEventListener("mousemove", e => {
-    if (drag) {
+    if (dragCanvas) {
         offsetX += e.clientX - lastX;
         offsetY += e.clientY - lastY;
         lastX = e.clientX;
@@ -58,12 +58,17 @@ document.getElementById("gravityReset").addEventListener("click", () => {
     gravityValue.innerText = gravity.toFixed(1) + " m/s²";
 });
 airResSlider.addEventListener("input", () => {
-    airResValue.innerText = airResSlider.value;
+    airResValue.innerText = parseFloat(airResSlider.value).toFixed(1) + " C_d";
 });
 
 // ----- SIMULATION -----
-function simulateProjectile(angle, force, airRes) {
+function simulateProjectile(angle, force, C_d) {
     const dt = 0.1;
+    const rho = 1.225;  // kg/m³
+    const A = 0.785;    // m²
+    const m = 1;        // kg
+    const dragScale = 0.1; // scale down drag for visualization
+
     let x = 0, y = 0;
     let traj = [{ x, y }];
 
@@ -72,10 +77,12 @@ function simulateProjectile(angle, force, airRes) {
     let vy = force * Math.sin(angleRad);
 
     for (let i = 0; i < 200; i++) {
-        if (airRes > 0) {
-            const drag = airRes / 100; // slider -> drag
-            vx *= (1 - drag * dt);
-            vy *= (1 - drag * dt);
+        if (C_d > 0) {
+            const v = Math.sqrt(vx*vx + vy*vy);
+            const F_drag = 0.5 * rho * C_d * A * v * v * dragScale; // scaled
+            const a_drag = F_drag / m;
+            vx -= (vx / v) * a_drag * dt;
+            vy -= (vy / v) * a_drag * dt;
         }
 
         x += vx * dt;
@@ -118,11 +125,13 @@ function drawAxes(drawCtx) {
     drawCtx.font = "12px sans-serif";
     drawCtx.fillStyle = "white";
 
+    // X-axis
     drawCtx.beginPath();
     drawCtx.moveTo(0, offsetY);
     drawCtx.lineTo(canvas.width, offsetY);
     drawCtx.stroke();
 
+    // Y-axis
     drawCtx.beginPath();
     drawCtx.moveTo(offsetX, 0);
     drawCtx.lineTo(offsetX, canvas.height);
@@ -131,20 +140,18 @@ function drawAxes(drawCtx) {
     const labelSpacingPx = 50;
     const preloadLabels = 20;
 
-    // X labels
     const minX = Math.floor((-offsetX - preloadLabels*labelSpacingPx)/labelSpacingPx);
     const maxX = Math.ceil((canvas.width-offsetX + preloadLabels*labelSpacingPx)/labelSpacingPx);
-    for (let i=minX;i<=maxX;i++){
+    for(let i=minX;i<=maxX;i++){
         if(i===0) continue;
         let px = offsetX + i*labelSpacingPx;
         let value = (i*labelSpacingPx)/scale;
         drawCtx.fillText(value.toFixed(0), px-8, offsetY+15);
     }
 
-    // Y labels
     const minY = Math.floor((-offsetY - preloadLabels*labelSpacingPx)/labelSpacingPx);
     const maxY = Math.ceil((canvas.height-offsetY + preloadLabels*labelSpacingPx)/labelSpacingPx);
-    for (let i=minY;i<=maxY;i++){
+    for(let i=minY;i<=maxY;i++){
         if(i===0) continue;
         let py = offsetY - i*labelSpacingPx;
         let value = (i*labelSpacingPx)/scale;
@@ -153,16 +160,17 @@ function drawAxes(drawCtx) {
 }
 
 // ----- DRAW FRAME -----
-function drawFrame(n) {
+function drawFrame(n){
     drawAxes(ctx);
-    if (!points || points.length===0) return;
+
+    if(!points||points.length===0) return;
 
     ctx.beginPath();
-    for (let i=0;i<=n && i<points.length;i++){
+    for(let i=0;i<=n && i<points.length;i++){
         let px = offsetX + points[i].x*scale;
         let py = offsetY - points[i].y*scale;
-        if(i===0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
+        if(i===0) ctx.moveTo(px,py);
+        else ctx.lineTo(px,py);
     }
     ctx.strokeStyle = "#3b82f6";
     ctx.lineWidth = 2;
@@ -171,14 +179,14 @@ function drawFrame(n) {
     if(n<points.length){
         let p = points[n];
         ctx.beginPath();
-        ctx.arc(offsetX + p.x*scale, offsetY - p.y*scale, 6,0,2*Math.PI);
-        ctx.fillStyle = "red";
+        ctx.arc(offsetX + p.x*scale, offsetY - p.y*scale, 6, 0, 2*Math.PI);
+        ctx.fillStyle="red";
         ctx.fill();
     }
 }
 
 // ----- ZOOM -----
-function zoomIn(){ scale*=1.2; drawFrame(animationIndex); }
-function zoomOut(){ scale/=1.2; drawFrame(animationIndex); }
+function zoomIn(){ scale *=1.2; drawFrame(animationIndex);}
+function zoomOut(){ scale/=1.2; drawFrame(animationIndex);}
 
-window.onload = () => { drawFrame(0); };
+window.onload = ()=>{ drawAxes(ctx); };

@@ -41,22 +41,26 @@ body {
 }
 
 .control-row label {
-  width: 120px; /* fixed label width */
+  width: 160px; /* fixed label width */
 }
 
 .control-row input[type="range"] {
-  flex: 1; /* slider fills remaining space */
+  flex: 1;
 }
 
 .slider-value {
-  width: 60px; /* fixed width for value display */
+  width: 60px;
+  text-align: right;
+}
+
+.slider-unit {
+  width: 40px;
   text-align: left;
 }
 
 .control-row button {
   margin-left: 10px;
 }
-
 
 button {
   background-color: #313244;
