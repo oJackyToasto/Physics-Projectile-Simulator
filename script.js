@@ -116,10 +116,17 @@ function runAnimation(){
 }
 
 // ------------------ TOGGLE RUN/PAUSE ------------------
-function toggleSimulation(){
-    if(!isRunning){
-        // If we finished the last simulation, .innerText = "Pause";
-        runAnimation();
+function toggleSimulation() {
+    if (!isRunning) {
+        if (points.length === 0 || animationIndex >= points.length - 1) {
+            // Start a new simulation if none exists or it finished
+            runSimulation();
+        } else {
+            // Resume from current animationIndex
+            isRunning = true;
+            document.getElementById("runBtn").innerText = "Pause";
+            runAnimation();
+        }
     } else {
         // Pause
         isRunning = false;
@@ -127,6 +134,7 @@ function toggleSimulation(){
         document.getElementById("runBtn").innerText = "Run";
     }
 }
+
 
 // ------------------ RESET ------------------
 function resetSimulation(){
