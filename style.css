@@ -31,7 +31,7 @@ body {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .control-row {
@@ -41,12 +41,22 @@ body {
 }
 
 .control-row label {
-  width: 120px;
+  width: 120px; /* fixed label width */
 }
 
 .control-row input[type="range"] {
-  flex: 1;
+  flex: 1; /* slider fills remaining space */
 }
+
+.slider-value {
+  width: 60px; /* fixed width for value display */
+  text-align: left;
+}
+
+.control-row button {
+  margin-left: 10px;
+}
+
 
 button {
   background-color: #313244;

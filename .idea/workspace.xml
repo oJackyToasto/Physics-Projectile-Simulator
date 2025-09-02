@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added &quot;Gravity&quot; slider">
+    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added &quot;AirRes&quot; Slider">
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,13 +88,22 @@
       <option name="project" value="LOCAL" />
       <updated>1756821134557</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added &quot;AirRes&quot; Slider">
+      <option name="closed" value="true" />
+      <created>1756821357472</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1756821357472</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial Commint" />
     <MESSAGE value="Fixed Bugs" />
     <MESSAGE value="Added &quot;Gravity&quot; slider" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added &quot;Gravity&quot; slider" />
+    <MESSAGE value="Added &quot;AirRes&quot; Slider" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added &quot;AirRes&quot; Slider" />
   </component>
 </project>
