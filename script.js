@@ -5,15 +5,14 @@ let points = [];
 let animationIndex = 0;
 let animationId = null;
 
-// 3D Camera
-let camera = {
-    x: 0,      // camera position in world space
-    y: 0,
-    z: 50      // distance from scene (controls zoom)
-};
+let padding = 50;
+let offsetX = padding;
+let offsetY = canvas.height - padding;
 
 let drag = false, lastX, lastY;
+let scale = 10; // pixels per unit
 
+// ----- DRAGGING -----
 canvas.addEventListener("mousedown", e => {
     drag = true;
     lastX = e.clientX;
@@ -26,14 +25,15 @@ canvas.addEventListener("mouseup", () => {
 });
 canvas.addEventListener("mousemove", e => {
     if (drag) {
-        camera.x -= (e.clientX - lastX) / 10;
-        camera.y += (e.clientY - lastY) / 10;
+        offsetX += e.clientX - lastX;
+        offsetY += e.clientY - lastY;
         lastX = e.clientX;
         lastY = e.clientY;
         drawFrame(animationIndex);
     }
 });
 
+// ----- SLIDERS -----
 const angleSlider = document.getElementById("angle");
 const forceSlider = document.getElementById("force");
 
@@ -44,12 +44,12 @@ forceSlider.addEventListener("input", () => {
     document.getElementById("forceValue").innerText = forceSlider.value + " N";
 });
 
-// --- Projectile simulation in JS ---
+// ----- SIMULATION -----
 function simulateProjectile(angle, force, airRes) {
     const g = 9.8;
     const dt = 0.1;
     let x = 0, y = 0;
-    let points = [{ x, y, z: 0 }];
+    let traj = [{ x, y }];
 
     const angleRad = angle * Math.PI / 180;
     let vx = force * Math.cos(angleRad);
@@ -62,20 +62,18 @@ function simulateProjectile(angle, force, airRes) {
             vy *= (1 - drag * dt);
         }
 
-        // Update positions
         x += vx * dt;
         y += vy * dt - 0.5 * g * dt * dt;
         vy -= g * dt;
 
         if (y < 0) break;
 
-        points.push({ x, y, z: 0 });
+        traj.push({ x, y });
     }
 
-    return points;
+    return traj;
 }
 
-// --- Run simulation ---
 function runSimulation() {
     cancelAnimationFrame(animationId);
     animationIndex = 0;
@@ -97,79 +95,82 @@ function animate() {
     }
 }
 
-// --- 3D projection ---
-function project(point) {
-    const scaleFactor = 200; // world units to pixels
-    const zOffset = camera.z + 0.0001; // avoid div by zero
+// ----- AXES -----
+function drawAxes(drawCtx) {
+    drawCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const screenX = canvas.width / 2 + (point.x - camera.x) * (scaleFactor / zOffset);
-    const screenY = canvas.height / 2 - (point.y - camera.y) * (scaleFactor / zOffset);
-    return { x: screenX, y: screenY };
-}
+    drawCtx.strokeStyle = "white";
+    drawCtx.lineWidth = 1;
+    drawCtx.font = "12px sans-serif";
+    drawCtx.fillStyle = "white";
 
-// --- Draw axes ---
-function drawAxes() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 1;
-    ctx.font = "12px sans-serif";
-    ctx.fillStyle = "white";
+    // Axis lines
+    drawCtx.beginPath();
+    drawCtx.moveTo(0, offsetY);
+    drawCtx.lineTo(canvas.width, offsetY);
+    drawCtx.stroke();
+
+    drawCtx.beginPath();
+    drawCtx.moveTo(offsetX, 0);
+    drawCtx.lineTo(offsetX, canvas.height);
+    drawCtx.stroke();
+
+    const labelSpacingPx = 50;
+    const preloadLabels = 20;
 
     // X-axis labels
-    for (let i = -20; i <= 20; i++) {
-        const p = project({ x: i, y: 0, z: 0 });
-        ctx.fillText(i, p.x, p.y + 15);
+    const minIndexX = Math.floor((-offsetX - preloadLabels * labelSpacingPx) / labelSpacingPx);
+    const maxIndexX = Math.ceil((canvas.width - offsetX + preloadLabels * labelSpacingPx) / labelSpacingPx);
+
+    for (let i = minIndexX; i <= maxIndexX; i++) {
+        if (i === 0) continue;
+        let px = offsetX + i * labelSpacingPx;
+        let value = (i * labelSpacingPx) / scale;
+        drawCtx.fillText(value.toFixed(0), px - 8, offsetY + 15);
     }
 
     // Y-axis labels
-    for (let i = 0; i <= 20; i++) {
-        const p = project({ x: 0, y: i, z: 0 });
-        ctx.fillText(i, p.x - 20, p.y + 4);
+    const minIndexY = Math.floor((-offsetY - preloadLabels * labelSpacingPx) / labelSpacingPx);
+    const maxIndexY = Math.ceil((canvas.height - offsetY + preloadLabels * labelSpacingPx) / labelSpacingPx);
+
+    for (let i = minIndexY; i <= maxIndexY; i++) {
+        if (i === 0) continue;
+        let py = offsetY - i * labelSpacingPx;
+        let value = (i * labelSpacingPx) / scale;
+        drawCtx.fillText(value.toFixed(0), offsetX - 25, py + 4);
     }
-
-    // X-axis line
-    let xStart = project({ x: -20, y: 0, z: 0 });
-    let xEnd = project({ x: 20, y: 0, z: 0 });
-    ctx.beginPath();
-    ctx.moveTo(xStart.x, xStart.y);
-    ctx.lineTo(xEnd.x, xEnd.y);
-    ctx.stroke();
-
-    // Y-axis line
-    let yStart = project({ x: 0, y: 0, z: 0 });
-    let yEnd = project({ x: 0, y: 20, z: 0 });
-    ctx.beginPath();
-    ctx.moveTo(yStart.x, yStart.y);
-    ctx.lineTo(yEnd.x, yEnd.y);
-    ctx.stroke();
 }
 
-// --- Draw frame ---
+// ----- DRAW FRAME -----
 function drawFrame(n) {
-    drawAxes();
+    drawAxes(ctx);
+
     if (!points || points.length === 0) return;
 
+    // Draw trajectory
     ctx.beginPath();
     for (let i = 0; i <= n && i < points.length; i++) {
-        const p = project(points[i]);
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
+        let px = offsetX + points[i].x * scale;
+        let py = offsetY - points[i].y * scale;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
     }
     ctx.strokeStyle = "#3b82f6";
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Draw moving projectile
     if (n < points.length) {
-        const p = project(points[n]);
+        let p = points[n];
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, 2 * Math.PI);
+        ctx.arc(offsetX + p.x * scale, offsetY - p.y * scale, 6, 0, 2 * Math.PI);
         ctx.fillStyle = "red";
         ctx.fill();
     }
 }
 
-// --- Zoom ---
-function zoomIn() { camera.z *= 0.8; drawFrame(animationIndex); }
-function zoomOut() { camera.z *= 1.25; drawFrame(animationIndex); }
+// ----- ZOOM -----
+function zoomIn() { scale *= 1.2; drawFrame(animationIndex); }
+function zoomOut() { scale /= 1.2; drawFrame(animationIndex); }
 
-window.onload = () => { drawAxes(); };
+window.onload = () => { drawAxes(ctx); };
