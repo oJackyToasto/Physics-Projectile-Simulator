@@ -15,7 +15,13 @@
     <button onclick="zoomIn()">+</button>
     <button onclick="zoomOut()">-</button>
   </div>
+
+  <div id="stats">
+    <!-- Stats will appear here -->
+  </div>
 </div>
+
+
 
 <div id="controls">
   <div class="control-row">
@@ -43,8 +49,16 @@
     <span class="slider-value" id="airResValue">0 C_d</span>
   </div>
 
-  <button onclick="runSimulation()">Run</button>
+  <div class="button-row">
+    <button onclick="showPeak()">Show Peak</button>
+    <button id="toggleStatsBtn">Show Stats</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="runSimulation()">Run</button>
+  </div>
 </div>
+
 
 
 <script src="script.js"></script>
