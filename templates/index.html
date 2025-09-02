@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projectile Simulator</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="canvas-container">
+  <canvas id="simCanvas" width="800" height="500"></canvas>
+
+  <div id="zoomControls">
+    <button onclick="zoomIn()">+</button>
+    <button onclick="zoomOut()">-</button>
+  </div>
+</div>
+
+<div id="controls">
+  Angle: <input type="range" id="angle" min="0" max="90" value="45">
+  <span id="angleValue">45°</span>
+  Force: <input type="range" id="force" min="0" max="100" value="50">
+  <span id="forceValue">50 N</span>
+  <br>
+  Air Resistance: <input type="checkbox" id="airRes" checked>
+  <br>
+  <button onclick="runSimulation()">Run</button>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  font-family: sans-serif;
+}
+
+.canvas-container {
+  position: relative;
+  display: inline-block;
+}
+
+#simCanvas {
+  border: 2px solid #89b4fa;
+  background-color: #11111b;
+  cursor: grab;
+}
+
+#zoomControls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+#controls {
+  margin-top: 12px;
+}
+
+button {
+  background-color: #313244;
+  color: #cdd6f4;
+  border: 1px solid #89b4fa;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 8px;
+  background: #555;
+  border-radius: 4px;
+  outline: none;
+  margin: 0 5px;
+  vertical-align: middle;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+}
