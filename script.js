@@ -24,6 +24,7 @@ const airResSlider = document.getElementById("airRes");
 const speedSlider = document.getElementById("simSpeed");
 const statsDiv = document.getElementById("stats");
 const toggleStatsBtn = document.getElementById("toggleStatsBtn");
+const gravityReset = document.getElementById("gravityReset");
 
 toggleStatsBtn.addEventListener("click", () => {
     statsEnabled = !statsEnabled; // toggle stats display
@@ -117,14 +118,7 @@ function runAnimation(){
 // ------------------ TOGGLE RUN/PAUSE ------------------
 function toggleSimulation(){
     if(!isRunning){
-        // If we finished the last simulation, reset index
-        if(points.length===0 || animationIndex >= points.length-1){
-            animationIndex = 0;
-            runSimulation(true); // regenerate points based on current sliders
-        }
-
-        isRunning = true;
-        document.getElementById("runBtn").innerText = "Pause";
+        // If we finished the last simulation, .innerText = "Pause";
         runAnimation();
     } else {
         // Pause
@@ -142,6 +136,11 @@ function resetSimulation(){
     if(statsEnabled) updateStats(points[0]);
     isRunning = false;
     document.getElementById("runBtn").innerText = "Run";
+}
+
+function resetGravity() {
+    gravitySlider.value = 9.8;
+    document.getElementById("gravityValue").innerText = gravitySlider.value + " m/s²";
 }
 
 // ------------------ STATS ------------------

@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added ShowStats and ShowPeak">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added Simulation Speed, Pause, Reset">
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/script.js" afterDir="false" />
     </list>
@@ -121,7 +120,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756823831882</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Added Simulation Speed, Pause, Reset">
+      <option name="closed" value="true" />
+      <created>1756825770450</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1756825770450</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -132,6 +139,7 @@
     <MESSAGE value="Fixed slider styling" />
     <MESSAGE value="Fixed physics for airRes" />
     <MESSAGE value="Added ShowStats and ShowPeak" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added ShowStats and ShowPeak" />
+    <MESSAGE value="Added Simulation Speed, Pause, Reset" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Simulation Speed, Pause, Reset" />
   </component>
 </project>
