@@ -20,13 +20,19 @@
 <div id="controls">
   Angle: <input type="range" id="angle" min="0" max="90" value="45">
   <span id="angleValue">45°</span>
+  <br>
   Force: <input type="range" id="force" min="0" max="100" value="50">
   <span id="forceValue">50 N</span>
   <br>
-  Air Resistance: <input type="checkbox" id="airRes" checked>
+  Gravity: <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+  <span id="gravityValue">9.8 m/s²</span>
+  <button id="gravityReset">Reset</button>
+  <br>
+  Air Resistance: <input type="checkbox" id="airRes">
   <br>
   <button onclick="runSimulation()">Run</button>
 </div>
+
 
 <!-- Directly reference the JS file -->
 <script src="script.js"></script>

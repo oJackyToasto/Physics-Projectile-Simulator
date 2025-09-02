@@ -12,6 +12,8 @@ let offsetY = canvas.height - padding;
 let drag = false, lastX, lastY;
 let scale = 10; // pixels per unit
 
+let gravity = 9.8;
+
 // ----- DRAGGING -----
 canvas.addEventListener("mousedown", e => {
     drag = true;
@@ -36,6 +38,8 @@ canvas.addEventListener("mousemove", e => {
 // ----- SLIDERS -----
 const angleSlider = document.getElementById("angle");
 const forceSlider = document.getElementById("force");
+const gravitySlider = document.getElementById("gravity");
+const gravityValue = document.getElementById("gravityValue");
 
 angleSlider.addEventListener("input", () => {
     document.getElementById("angleValue").innerText = angleSlider.value + "°";
@@ -43,10 +47,20 @@ angleSlider.addEventListener("input", () => {
 forceSlider.addEventListener("input", () => {
     document.getElementById("forceValue").innerText = forceSlider.value + " N";
 });
+gravitySlider.addEventListener("input", () => {
+    gravity = parseFloat(gravitySlider.value);
+    gravityValue.innerText = gravity.toFixed(1) + " m/s²";
+});
+
+// Gravity reset
+document.getElementById("gravityReset").addEventListener("click", () => {
+    gravity = 9.8;
+    gravitySlider.value = gravity;
+    gravityValue.innerText = gravity.toFixed(1) + " m/s²";
+});
 
 // ----- SIMULATION -----
 function simulateProjectile(angle, force, airRes) {
-    const g = 9.8;
     const dt = 0.1;
     let x = 0, y = 0;
     let traj = [{ x, y }];
@@ -63,8 +77,8 @@ function simulateProjectile(angle, force, airRes) {
         }
 
         x += vx * dt;
-        y += vy * dt - 0.5 * g * dt * dt;
-        vy -= g * dt;
+        y += vy * dt - 0.5 * gravity * dt * dt;
+        vy -= gravity * dt;
 
         if (y < 0) break;
 
@@ -80,7 +94,7 @@ function runSimulation() {
 
     const angle = parseFloat(angleSlider.value);
     const force = parseFloat(forceSlider.value);
-    const airRes = document.getElementById("airRes").checked;
+    const airRes = document.getElementById("airRes");
 
     points = simulateProjectile(angle, force, airRes);
     drawFrame(0);
