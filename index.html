@@ -18,23 +18,34 @@
 </div>
 
 <div id="controls">
-  Angle: <input type="range" id="angle" min="0" max="90" value="45">
-  <span id="angleValue">45°</span>
-  <br>
-  Force: <input type="range" id="force" min="0" max="100" value="50">
-  <span id="forceValue">50 N</span>
-  <br>
-  Gravity: <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
-  <span id="gravityValue">9.8 m/s²</span>
-  <button id="gravityReset">Reset</button>
-  <br>
-  Air Resistance: <input type="checkbox" id="airRes">
-  <br>
+  <div class="control-row">
+    <label for="angle">Angle:</label>
+    <input type="range" id="angle" min="0" max="90" value="45">
+    <span id="angleValue">45°</span>
+  </div>
+
+  <div class="control-row">
+    <label for="force">Force:</label>
+    <input type="range" id="force" min="0" max="100" value="50">
+    <span id="forceValue">50 N</span>
+  </div>
+
+  <div class="control-row">
+    <label for="gravity">Gravity:</label>
+    <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+    <span id="gravityValue">9.8 m/s²</span>
+    <button id="gravityReset">Reset</button>
+  </div>
+
+  <div class="control-row">
+    <label for="airRes">Air Resistance:</label>
+    <input type="range" id="airRes" min="0" max="20" step="1" value="0">
+    <span id="airResValue">0</span>
+  </div>
+
   <button onclick="runSimulation()">Run</button>
 </div>
 
-
-<!-- Directly reference the JS file -->
 <script src="script.js"></script>
 </body>
 </html>
