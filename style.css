@@ -3,11 +3,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
   background-color: #1e1e2e;
   color: #cdd6f4;
   font-family: sans-serif;
+
+  /* REMOVE fixed height to allow scrolling */
+  min-height: 100vh; /* instead of height: 100vh */
+  overflow-y: auto; /* allow vertical scroll */
+  padding: 10px;
 }
 
 #simCanvas {
