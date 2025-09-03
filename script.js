@@ -24,7 +24,22 @@ const airResSlider = document.getElementById("airRes");
 const speedSlider = document.getElementById("simSpeed");
 const statsDiv = document.getElementById("stats");
 const toggleStatsBtn = document.getElementById("toggleStatsBtn");
+const togglePeakBtn = document.getElementById("togglePeakBtn")
 const gravityReset = document.getElementById("gravityReset");
+
+togglePeakBtn.addEventListener("click", () => {
+    showPeakEnabled = !showPeakEnabled;
+
+    if (showPeakEnabled) {
+        togglePeakBtn.innerText = "Hide Peak";
+    } else {
+        togglePeakBtn.innerText = "Show Peak";
+    }
+
+    // 🔥 Force redraw immediately
+    drawFrame(Math.floor(animationIndex));
+});
+
 
 toggleStatsBtn.addEventListener("click", () => {
     statsEnabled = !statsEnabled; // toggle stats display
@@ -175,17 +190,17 @@ function updateStats(current){
 
 // ------------------ PEAK ------------------
 function showPeak() {
-    if(points.length === 0) return;
-    showPeakEnabled = true;
+    if (points.length === 0) return;
 
     // Only check points up to the current animation index
-    let peak = points.slice(0, Math.floor(animationIndex)+1).reduce((p, c) => c.y > p.y ? c : p, points[0]);
+    let peak = points.slice(0, Math.floor(animationIndex) + 1)
+                     .reduce((p, c) => c.y > p.y ? c : p, points[0]);
 
     const px = offsetX + peak.x * scale;
     const py = offsetY - peak.y * scale;
 
     // horizontal line
-    ctx.setLineDash([5,5]);
+    ctx.setLineDash([5, 5]);
     ctx.strokeStyle = "yellow";
     ctx.beginPath();
     ctx.moveTo(offsetX, py);
@@ -267,7 +282,7 @@ function drawFrame(n){
         ctx.fill();
     }
 
-    if(showPeakEnabled) showPeak();
+    if (showPeakEnabled) showPeak();
 }
 
 // ------------------ ZOOM ------------------
