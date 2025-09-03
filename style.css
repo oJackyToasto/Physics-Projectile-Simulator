@@ -13,10 +13,21 @@ body {
   padding: 10px;
 }
 
+/* Default: full-size canvas */
 #simCanvas {
+  width: 800px;
+  height: 500px;
   border: 2px solid #89b4fa;
   background-color: #11111b;
   cursor: grab;
+}
+
+/* If screen width is less than canvas width, shrink proportionally */
+@media (max-width: 830px) {
+  #simCanvas {
+    width: 100%;      /* Shrink to fit screen */
+    height: auto;     /* Maintain aspect ratio */
+  }
 }
 
 .canvas-container {
