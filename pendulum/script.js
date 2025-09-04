@@ -25,6 +25,8 @@ let animationId = null;
 let lastTime = null;
 
 let statsEnabled = false;
+let secondPendulumEnabled = false;
+let thirdPendulumEnabled = false;
 
 // ------------------ ELEMENTS ------------------
 const statsDiv = document.getElementById("stats");
@@ -36,6 +38,9 @@ const length1Slider = document.getElementById("length1");
 const gravitySlider = document.getElementById("gravity");
 const airResSlider = document.getElementById("airRes");
 const speedSlider = document.getElementById("simSpeed");
+const extraContainer = document.getElementById("extraPendulumContainer");
+const toggleSecondBtn = document.getElementById("toggleSecondPendulum");
+const toggleThirdBtn = document.getElementById("toggleThirdPendulum");
 
 // ------------------ UI HOOKS (labels) ------------------
 function syncLabels() {
@@ -53,6 +58,86 @@ toggleStatsBtn.addEventListener("click", () => {
   toggleStatsBtn.innerText = statsEnabled ? "Hide Stats" : "Show Stats";
   if (!statsEnabled) statsDiv.innerHTML = "";
   else updateStats();
+});
+
+// Template for Pendulum 2
+const pendulum2HTML = `
+  <div class="pendulum_control" id="pen2">
+    <div class="control-row">
+      <label for="angle2">Start Angle (2):</label>
+      <input type="range" id="angle2" min="0" max="90" value="45">
+      <span class="slider-value" id="angle2Value">45°</span>
+    </div>
+
+    <div class="control-row">
+      <label for="mass2">Mass (2):</label>
+      <input type="range" id="mass2" min="1" max="10" value="1">
+      <span class="slider-value" id="mass2Value">1kg</span>
+    </div>
+
+    <div class="control-row">
+      <label for="length2">Length (2):</label>
+      <input type="range" id="length2" min="1" max="20" value="10">
+      <span class="slider-value" id="length2Value">10m</span>
+    </div>
+  </div>
+`;
+
+// Template for Pendulum 3
+const pendulum3HTML = `
+  <div class="pendulum_control" id="pen3">
+    <div class="control-row">
+      <label for="angle3">Start Angle (3):</label>
+      <input type="range" id="angle3" min="0" max="90" value="45">
+      <span class="slider-value" id="angle3Value">45°</span>
+    </div>
+
+    <div class="control-row">
+      <label for="mass3">Mass (3):</label>
+      <input type="range" id="mass3" min="1" max="10" value="1">
+      <span class="slider-value" id="mass3Value">1kg</span>
+    </div>
+
+    <div class="control-row">
+      <label for="length3">Length (3):</label>
+      <input type="range" id="length3" min="1" max="20" value="10">
+      <span class="slider-value" id="length3Value">10m</span>
+    </div>
+  </div>
+`;
+
+// Handle second pendulum toggle
+toggleSecondBtn.addEventListener("click", () => {
+  if (!secondPendulumEnabled) {
+    // Enable second pendulum
+    extraContainer.innerHTML = pendulum2HTML;
+    secondPendulumEnabled = true;
+    toggleSecondBtn.textContent = "Disable 2nd Pendulum";
+    toggleThirdBtn.style.display = "block"; // show 3rd toggle button
+  } else {
+    // Disable both second and third
+    extraContainer.innerHTML = "";
+    secondPendulumEnabled = false;
+    thirdPendulumEnabled = false;
+    toggleSecondBtn.textContent = "Enable 2nd Pendulum";
+    toggleThirdBtn.style.display = "none";
+    toggleThirdBtn.textContent = "Enable 3rd Pendulum";
+  }
+});
+
+// Handle third pendulum toggle
+toggleThirdBtn.addEventListener("click", () => {
+  if (!thirdPendulumEnabled) {
+    // Add pendulum 3 under pendulum 2
+    extraContainer.innerHTML = pendulum2HTML + pendulum3HTML;
+    thirdPendulumEnabled = true;
+    toggleThirdBtn.textContent = "Disable 3rd Pendulum";
+  } else {
+    // Remove pendulum 3 but keep pendulum 2
+    extraContainer.innerHTML = pendulum2HTML;
+    thirdPendulumEnabled = false;
+    toggleThirdBtn.textContent = "Enable 3rd Pendulum";
+  }
 });
 
 // ------------------ DRAGGING + TOUCH (pan / pinch) ------------------
