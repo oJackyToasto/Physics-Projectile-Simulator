@@ -28,23 +28,28 @@
 
 
 <div id="controls">
-  <div class="control-row">
-    <label for="angle1">Start Angle (1):</label>
-    <input type="range" id="angle1" min="0" max="90" value="45">
-    <span class="slider-value" id="angle1Value">45°</span>
+  <div class="pendulum_control" id="pen1">
+    <div class="control-row">
+      <label for="angle1">Start Angle (1):</label>
+      <input type="range" id="angle1" min="0" max="90" value="45">
+      <span class="slider-value" id="angle1Value">45°</span>
+    </div>
+
+    <div class="control-row">
+      <label for="mass1">Mass (1):</label>
+      <input type="range" id="mass1" min="1" max="10" value="1">
+      <span class="slider-value" id="mass1Value">1kg</span>
+    </div>
+
+    <div class="control-row">
+      <label for="length1">Length (1):</label>
+      <input type="range" id="length1" min="1" max="20" value="10">
+      <span class="slider-value" id="length1Value">10m</span>
+    </div>
   </div>
 
-  <div class="control-row">
-    <label for="mass1">Mass (1):</label>
-    <input type="range" id="mass1" min="1" max="10" value="1">
-    <span class="slider-value" id="mass1Value">1kg</span>
-  </div>
-
-  <div class="control-row">
-    <label for="length1">Length (1):</label>
-    <input type="range" id="length1" min="1" max="20" value="10">
-    <span class="slider-value" id="length1Value">10m</span>
-  </div>
+   <!-- Container for dynamically added pendulum controls -->
+  <div id="extraPendulumContainer"></div>
 
   <div class="control-row">
     <label for="gravity">Gravity:</label>
@@ -77,10 +82,12 @@
     <button onclick="resetSimulation()">Reset</button>
   </div>
 
+  <!-- Toggle Buttons -->
   <div class="button-row">
-    <button onclick="enablePen2()">Enable 2nd Pendulum</button>
-    <button onclick="enablePen3()">Enable 3rd Pendulum (Chaotic)</button>
+    <button id="toggleSecondPendulum">Enable 2nd Pendulum</button>
+    <button id="toggleThirdPendulum" style="display:none;">Enable 3rd Pendulum</button>
   </div>
+
 
 </div>
 

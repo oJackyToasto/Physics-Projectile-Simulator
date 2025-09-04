@@ -204,10 +204,16 @@ function step(dt) {
 
 // ------------------ DRAWING ------------------
 function worldToCanvas(xm, ym) {
+  // world: x right, y down
   return {
     x: offsetX + xm * scale,
-    y: offsetY - ym * scale
+    y: offsetY + ym * scale
   };
+}
+
+function getTotalLength() {
+  // For now only one pendulum:
+  return L; // later we can add + L2 + L3 when you implement them
 }
 
 function drawAxes(drawCtx) {
@@ -217,13 +223,13 @@ function drawAxes(drawCtx) {
   drawCtx.font = "12px sans-serif";
   drawCtx.fillStyle = "white";
 
-  // X axis
+  // X axis (horizontal)
   drawCtx.beginPath();
   drawCtx.moveTo(0, offsetY);
   drawCtx.lineTo(canvas.width, offsetY);
   drawCtx.stroke();
 
-  // Y axis
+  // Y axis (vertical)
   drawCtx.beginPath();
   drawCtx.moveTo(offsetX, 0);
   drawCtx.lineTo(offsetX, canvas.height);
@@ -233,31 +239,33 @@ function drawAxes(drawCtx) {
   const preloadLabels = 20;
 
   // X-axis labels (meters)
-  for (let i = Math.floor((-offsetX - preloadLabels * labelSpacingPx) / labelSpacingPx);
-       i <= Math.ceil((canvas.width - offsetX + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
+  const startXi = Math.floor((-offsetX - preloadLabels * labelSpacingPx) / labelSpacingPx);
+  const endXi   = Math.ceil((canvas.width - offsetX + preloadLabels * labelSpacingPx) / labelSpacingPx);
+  for (let i = startXi; i <= endXi; i++) {
     if (i === 0) continue;
-    let px = offsetX + i * labelSpacingPx;
-    let value = (i * labelSpacingPx) / scale;
+    const px = offsetX + i * labelSpacingPx;
+    const value = (i * labelSpacingPx) / scale;
     drawCtx.fillText(value.toFixed(0), px - 8, offsetY + 15);
   }
 
-  // Y-axis labels (meters)
-  for (let i = Math.floor((-offsetY - preloadLabels * labelSpacingPx) / labelSpacingPx);
-       i <= Math.ceil((canvas.height - offsetY + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
+  // Y-axis labels (meters) — note: Y grows *downwards* in world coords now
+  const startYi = Math.floor((-offsetY - preloadLabels * labelSpacingPx) / labelSpacingPx);
+  const endYi   = Math.ceil((canvas.height - offsetY + preloadLabels * labelSpacingPx) / labelSpacingPx);
+  for (let i = startYi; i <= endYi; i++) {
     if (i === 0) continue;
-    let py = offsetY - i * labelSpacingPx;
-    let value = (i * labelSpacingPx) / scale;
+    const py = offsetY + i * labelSpacingPx; // DOWNwards
+    const value = (i * labelSpacingPx) / scale;
     drawCtx.fillText(value.toFixed(0), offsetX - 25, py + 4);
   }
 }
 
 function drawPendulum(drawCtx) {
-  // Pivot at world (0,0) (i.e., at the axes intersection)
-  const pivot = worldToCanvas(0, 0);
+  const pivot = worldToCanvas(0, 0);            // pivot at world (0,0)
+  const totalLength = getTotalLength();        // L1 + L2 + ... later
 
-  // Bob position in *meters*
+  // Bob position (world coords): x right, y down
   const x_m = L * Math.sin(theta);
-  const y_m = -L * Math.cos(theta); // negative because down is -y in our world coords
+  const y_m = L * Math.cos(theta);   // at theta=0 -> y_m = L (bob below pivot by L)
 
   const bob = worldToCanvas(x_m, y_m);
 
@@ -282,6 +290,7 @@ function drawPendulum(drawCtx) {
   drawCtx.fill();
 }
 
+
 function drawFrame() {
   drawAxes(ctx);
   drawPendulum(ctx);
@@ -289,11 +298,20 @@ function drawFrame() {
 
 // ------------------ STATS ------------------
 function updateStats() {
-  // Linear speed at bob
+  const totalLength = getTotalLength();
+  // bob position (world y down)
+  const x_m = L * Math.sin(theta);
+  const y_m = L * Math.cos(theta);
+
+  // linear speed at bob
   const v = Math.abs(L * omega); // m/s
-  const height = L * (1 - Math.cos(theta)); // m above the lowest point
+
+  // height above lowest point: lowest point is at y = L (when theta=0),
+  // so height = L - current_y
+  const height = totalLength - y_m;
+
   const PE = m * g * height;
-  const KE = 0.5 * m * (L * omega) * (L * omega);
+  const KE = 0.5 * m * v * v;
   const total = PE + KE;
 
   statsDiv.innerHTML = `

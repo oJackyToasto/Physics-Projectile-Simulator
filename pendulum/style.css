@@ -62,14 +62,25 @@ body {
   gap: 10px;
 }
 
+.pendulum_control {
+  border: 2px solid #666; /* thicker and more visible */
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  background: #222;
+}
+
 .control-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
 .control-row label {
-  width: 160px; /* fixed label width */
+  width: 160px; /* consistent width for all labels */
+  text-align: left;
+  color: #cdd6f4;
 }
 
 .control-row input[type="range"] {
@@ -79,6 +90,7 @@ body {
 .slider-value {
   width: 80px;
   text-align: right;
+  color: #cdd6f4;
 }
 
 .slider-unit {
@@ -92,12 +104,12 @@ body {
 
 .button-row {
   display: flex;
-  gap: 10px;       /* space between buttons */
+  gap: 10px; /* space between buttons */
   margin-top: 10px;
 }
 
 .button-row button {
-  flex: 1;          /* buttons expand equally to fill row */
+  flex: 1; /* buttons expand equally to fill the row */
   padding: 6px 12px;
   background-color: #313244;
   color: #cdd6f4;
@@ -105,7 +117,22 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  transition: background-color 0.2s ease;
 }
+
+.button-row button:hover {
+  background-color: #45475a;
+}
+
+.toggle-buttons {
+  flex: 1; /* make toggle button containers take up equal space */
+  display: flex;
+}
+
+.toggle-buttons button {
+  flex: 1; /* toggle buttons fill the available space */
+}
+
 
 
 button {
