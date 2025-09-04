@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Projectile Simulator</title>
+  <title>Pendulum Simulator</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="title">
-  <h2>Projectile Simulator</h2>
+  <h2>Pendulum Simulator</h2>
 </div>
 
 <div class="canvas-container">
@@ -29,15 +29,21 @@
 
 <div id="controls">
   <div class="control-row">
-    <label for="angle">Angle:</label>
-    <input type="range" id="angle" min="0" max="90" value="45">
-    <span class="slider-value" id="angleValue">45°</span>
+    <label for="angle1">Start Angle (1):</label>
+    <input type="range" id="angle1" min="0" max="90" value="45">
+    <span class="slider-value" id="angle1Value">45°</span>
   </div>
 
   <div class="control-row">
-    <label for="force">Force:</label>
-    <input type="range" id="force" min="0" max="100" value="50">
-    <span class="slider-value" id="forceValue">50 N</span>
+    <label for="mass1">Mass (1):</label>
+    <input type="range" id="mass1" min="1" max="10" value="1">
+    <span class="slider-value" id="mass1Value">1kg</span>
+  </div>
+
+  <div class="control-row">
+    <label for="length1">Length (1):</label>
+    <input type="range" id="length1" min="1" max="20" value="10">
+    <span class="slider-value" id="length1Value">10m</span>
   </div>
 
   <div class="control-row">
@@ -55,13 +61,11 @@
 
   <div class="control-row">
     <label for="simSpeed">Simulation Speed:</label>
-    <input type="range" id="simSpeed" min="0" max="1" step="0.1" value="1">
+    <input type="range" id="simSpeed" min="0" max="2" step="0.1" value="1">
     <span class="slider-value" id="simSpeedValue">1.0×</span>
   </div>
 
-
   <div class="button-row">
-    <button id="togglePeakBtn">Show Peak</button>
     <button id="toggleStatsBtn">Show Stats</button>
   </div>
 
@@ -72,6 +76,12 @@
   <div class="button-row">
     <button onclick="resetSimulation()">Reset</button>
   </div>
+
+  <div class="button-row">
+    <button onclick="enablePen2()">Enable 2nd Pendulum</button>
+    <button onclick="enablePen3()">Enable 3rd Pendulum (Chaotic)</button>
+  </div>
+
 </div>
 
 

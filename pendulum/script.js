@@ -1,344 +1,352 @@
-// ------------------ GLOBAL VARIABLES ------------------
+// ------------------ GLOBALS ------------------
 const canvas = document.getElementById("simCanvas");
 const ctx = canvas.getContext("2d");
 
-let points = [];
-let animationIndex = 0;
-let animationId = null;
-let isRunning = false;
-let initialEnergy = 0;
-let statsEnabled = false;
-let showPeakEnabled = false;
-
+// Viewport / axes
+let scale = 10;                 // pixels per meter
+let offsetX = canvas.width / 2; // place Y-axis center
+let offsetY = 100;              // place X-axis near the top, making room for the pendulum
 let padding = 50;
-let offsetX = padding;
-let offsetY = canvas.height - padding;
-let scale = 10; // pixels per unit
-let simSpeed = 1; // animation speed multiplier
+
+// Simulation state (single pendulum)
+let theta = 45 * Math.PI / 180; // radians
+let omega = 0;                  // rad/s
+let alpha = 0;                  // rad/s^2
+
+// Controls (read live from sliders, but keep cached copies for speed)
+let L = 10;     // meters
+let m = 1;      // kg
+let g = 9.8;    // m/s^2
+let damping = 0; // 1/s (interpret "airRes" as damping coefficient)
+let simSpeed = 1;
+
+let isRunning = false;
+let animationId = null;
+let lastTime = null;
+
+let statsEnabled = false;
 
 // ------------------ ELEMENTS ------------------
-const angleSlider = document.getElementById("angle");
-const forceSlider = document.getElementById("force");
+const statsDiv = document.getElementById("stats");
+const toggleStatsBtn = document.getElementById("toggleStatsBtn");
+
+const angle1Slider = document.getElementById("angle1");
+const mass1Slider = document.getElementById("mass1");
+const length1Slider = document.getElementById("length1");
 const gravitySlider = document.getElementById("gravity");
 const airResSlider = document.getElementById("airRes");
 const speedSlider = document.getElementById("simSpeed");
-const statsDiv = document.getElementById("stats");
-const toggleStatsBtn = document.getElementById("toggleStatsBtn");
-const togglePeakBtn = document.getElementById("togglePeakBtn");
-const gravityReset = document.getElementById("gravityReset");
 
-// ------------------ PEAK TOGGLE ------------------
-togglePeakBtn.addEventListener("click", () => {
-    showPeakEnabled = !showPeakEnabled;
-    togglePeakBtn.innerText = showPeakEnabled ? "Hide Peak" : "Show Peak";
-    drawFrame(Math.floor(animationIndex)); // 🔥 Force redraw immediately
-});
+// ------------------ UI HOOKS (labels) ------------------
+function syncLabels() {
+  document.getElementById("angle1Value").innerText = angle1Slider.value + "°";
+  document.getElementById("mass1Value").innerText = mass1Slider.value + "kg";
+  document.getElementById("length1Value").innerText = length1Slider.value + "m";
+  document.getElementById("gravityValue").innerText = gravitySlider.value + " m/s²";
+  document.getElementById("airResValue").innerText = airResSlider.value + " N*s/m²";
+  document.getElementById("simSpeedValue").innerText = speedSlider.value + "x";
+}
 
 // ------------------ STATS TOGGLE ------------------
 toggleStatsBtn.addEventListener("click", () => {
-    statsEnabled = !statsEnabled;
-    toggleStatsBtn.innerText = statsEnabled ? "Hide Stats" : "Show Stats";
-    if (!statsEnabled) {
-        statsDiv.innerHTML = "";
-    } else if (points.length > 0) {
-        updateStats(points[Math.floor(animationIndex)]);
-    }
+  statsEnabled = !statsEnabled;
+  toggleStatsBtn.innerText = statsEnabled ? "Hide Stats" : "Show Stats";
+  if (!statsEnabled) statsDiv.innerHTML = "";
+  else updateStats();
 });
 
-// ------------------ DRAGGING (Mouse + Touch) ------------------
+// ------------------ DRAGGING + TOUCH (pan / pinch) ------------------
 let drag = false, lastX = 0, lastY = 0;
-let pinchStartDistance = 0; // For pinch-to-zoom
+let pinchStartDistance = 0;
 
 function startDrag(x, y) {
-    drag = true;
-    lastX = x;
-    lastY = y;
-    canvas.style.cursor = "grabbing";
+  drag = true;
+  lastX = x;
+  lastY = y;
+  canvas.style.cursor = "grabbing";
 }
-
 function endDrag() {
-    drag = false;
-    canvas.style.cursor = "grab";
+  drag = false;
+  canvas.style.cursor = "grab";
 }
-
 function doDrag(x, y) {
-    if (!drag) return;
-    offsetX += x - lastX;
-    offsetY += y - lastY;
-    lastX = x;
-    lastY = y;
-    drawFrame(Math.floor(animationIndex));
+  if (!drag) return;
+  offsetX += x - lastX;
+  offsetY += y - lastY;
+  lastX = x;
+  lastY = y;
+  drawFrame();
 }
 
-// Mouse events
+// Mouse
 canvas.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
 canvas.addEventListener("mouseup", endDrag);
 canvas.addEventListener("mousemove", e => doDrag(e.clientX, e.clientY));
 
-// Touch events
+// Touch
 canvas.addEventListener("touchstart", e => {
-    if (e.touches.length === 1) {
-        // Single finger drag
-        startDrag(e.touches[0].clientX, e.touches[0].clientY);
-    } else if (e.touches.length === 2) {
-        // Two fingers -> Pinch start
-        const dx = e.touches[1].clientX - e.touches[0].clientX;
-        const dy = e.touches[1].clientY - e.touches[0].clientY;
-        pinchStartDistance = Math.sqrt(dx * dx + dy * dy);
-    }
+  if (e.touches.length === 1) {
+    startDrag(e.touches[0].clientX, e.touches[0].clientY);
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[1].clientX - e.touches[0].clientX;
+    const dy = e.touches[1].clientY - e.touches[0].clientY;
+    pinchStartDistance = Math.sqrt(dx*dx + dy*dy);
+  }
 }, { passive: false });
 
 canvas.addEventListener("touchend", e => {
-    if (e.touches.length === 0) {
-        endDrag();
-    }
+  if (e.touches.length === 0) endDrag();
 }, { passive: false });
 
 canvas.addEventListener("touchmove", e => {
-    if (e.touches.length === 1) {
-        // Drag
-        doDrag(e.touches[0].clientX, e.touches[0].clientY);
-    } else if (e.touches.length === 2) {
-        // Pinch to zoom
-        const dx = e.touches[1].clientX - e.touches[0].clientX;
-        const dy = e.touches[1].clientY - e.touches[0].clientY;
-        const newDistance = Math.sqrt(dx * dx + dy * dy);
-
-        if (pinchStartDistance > 0) {
-            if (newDistance > pinchStartDistance + 10) zoomIn();
-            if (newDistance < pinchStartDistance - 10) zoomOut();
-        }
-        pinchStartDistance = newDistance;
+  if (e.touches.length === 1) {
+    doDrag(e.touches[0].clientX, e.touches[0].clientY);
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[1].clientX - e.touches[0].clientX;
+    const dy = e.touches[1].clientY - e.touches[0].clientY;
+    const newDistance = Math.sqrt(dx*dx + dy*dy);
+    if (pinchStartDistance > 0) {
+      if (newDistance > pinchStartDistance + 10) zoomIn();
+      if (newDistance < pinchStartDistance - 10) zoomOut();
     }
-    e.preventDefault(); // Prevent scrolling while dragging
+    pinchStartDistance = newDistance;
+  }
+  e.preventDefault();
 }, { passive: false });
 
-// ------------------ SLIDER DISPLAY ------------------
-angleSlider.addEventListener("input", () => document.getElementById("angleValue").innerText = angleSlider.value + "°");
-forceSlider.addEventListener("input", () => document.getElementById("forceValue").innerText = forceSlider.value + " N");
-gravitySlider.addEventListener("input", () => document.getElementById("gravityValue").innerText = gravitySlider.value + " m/s²");
-airResSlider.addEventListener("input", () => document.getElementById("airResValue").innerText = airResSlider.value + " N*s/m²");
-speedSlider.addEventListener("input", () => document.getElementById("simSpeedValue").innerText = speedSlider.value + "x");
+// ------------------ SLIDERS (values + live updates) ------------------
+angle1Slider.addEventListener("input", () => {
+  syncLabels();
+  // Reset angle to slider if user tweaks it (keeps demo intuitive)
+  theta = parseFloat(angle1Slider.value) * Math.PI / 180;
+  omega = 0;
+  drawFrame();
+  if (statsEnabled) updateStats();
+});
 
-// ------------------ SIMULATION GENERATION ------------------
-function runSimulation(justGenerate = false) {
-    cancelAnimationFrame(animationId);
-    animationIndex = 0;
-    points = [];
+mass1Slider.addEventListener("input", () => {
+  m = parseFloat(mass1Slider.value);
+  syncLabels();
+  if (statsEnabled) updateStats();
+});
 
-    const angle = parseFloat(angleSlider.value);
-    const speed = parseFloat(forceSlider.value);
-    const airRes = parseFloat(airResSlider.value);
-    const gravity = parseFloat(gravitySlider.value);
+length1Slider.addEventListener("input", () => {
+  L = parseFloat(length1Slider.value);
+  syncLabels();
+  drawFrame();
+  if (statsEnabled) updateStats();
+});
 
-    let vx = speed * Math.cos(angle * Math.PI / 180);
-    let vy = speed * Math.sin(angle * Math.PI / 180);
+gravitySlider.addEventListener("input", () => {
+  g = parseFloat(gravitySlider.value);
+  syncLabels();
+  if (statsEnabled) updateStats();
+});
 
-    const dt = 0.1;
-    let x = 0, y = 0;
+airResSlider.addEventListener("input", () => {
+  damping = parseFloat(airResSlider.value); // interpret as viscous damping coeff (1/s)
+  syncLabels();
+});
 
-    points.push({ x, y, vx, vy });
+speedSlider.addEventListener("input", () => {
+  simSpeed = parseFloat(speedSlider.value);
+  syncLabels();
+});
 
-    for (let i = 0; i < 1000; i++) {
-        let drag = airRes / 10;
-        if (drag > 0) {
-            vx *= (1 - drag * dt);
-            vy *= (1 - drag * dt);
-        }
-
-        x += vx * dt;
-        y += vy * dt - 0.5 * gravity * dt * dt;
-        vy -= gravity * dt;
-
-        if (y < 0) {
-            y = 0;
-            points.push({ x, y, vx, vy });
-            break;
-        }
-        points.push({ x, y, vx, vy });
-    }
-
-    initialEnergy = 0.5 * speed * speed; // mass=1kg, y0=0
-
-    if (!justGenerate) {
-        isRunning = true;
-        document.getElementById("runBtn").innerText = "Pause";
-        runAnimation();
-    }
+// ------------------ BUTTONS ------------------
+function resetGravity() {
+  gravitySlider.value = 9.8;
+  g = 9.8;
+  document.getElementById("gravityValue").innerText = g + " m/s²";
 }
 
-// ------------------ ANIMATION LOOP ------------------
-function runAnimation() {
-    drawFrame(Math.floor(animationIndex));
-    if (statsEnabled) updateStats(points[Math.floor(animationIndex)]);
-
-    if (animationIndex < points.length - 1 && isRunning) {
-        animationIndex += parseFloat(speedSlider.value);
-        animationId = requestAnimationFrame(runAnimation);
-    } else {
-        isRunning = false;
-        document.getElementById("runBtn").innerText = "Run";
-        if (statsEnabled) updateStats(points[points.length - 1]);
-    }
-}
-
-// ------------------ TOGGLE RUN/PAUSE ------------------
 function toggleSimulation() {
-    if (!isRunning) {
-        if (points.length === 0 || animationIndex >= points.length - 1) {
-            runSimulation(); // Start new simulation
-        } else {
-            isRunning = true;
-            document.getElementById("runBtn").innerText = "Pause";
-            runAnimation(); // Resume
-        }
-    } else {
-        isRunning = false;
-        cancelAnimationFrame(animationId);
-        document.getElementById("runBtn").innerText = "Run";
-    }
-}
-
-// ------------------ RESET ------------------
-function resetSimulation() {
-    cancelAnimationFrame(animationId);
-    animationIndex = 0;
-    drawFrame(0);
-    if (statsEnabled && points.length > 0) updateStats(points[0]);
+  if (!isRunning) {
+    isRunning = true;
+    lastTime = null; // reset time base
+    document.getElementById("runBtn").innerText = "Pause";
+    animationId = requestAnimationFrame(animate);
+  } else {
     isRunning = false;
     document.getElementById("runBtn").innerText = "Run";
+    cancelAnimationFrame(animationId);
+  }
 }
 
-function resetGravity() {
-    gravitySlider.value = 9.8;
-    document.getElementById("gravityValue").innerText = gravitySlider.value + " m/s²";
+function resetSimulation() {
+  isRunning = false;
+  cancelAnimationFrame(animationId);
+  document.getElementById("runBtn").innerText = "Run";
+
+  // Reset from sliders
+  theta = parseFloat(angle1Slider.value) * Math.PI / 180;
+  omega = 0;
+  // L, m, g, damping already tracked live
+  drawFrame();
+  if (statsEnabled) updateStats();
+}
+
+// Stubs so your buttons don’t error out yet
+function enablePen2() { alert("Second pendulum not implemented yet."); }
+function enablePen3() { alert("Third pendulum (chaotic) not implemented yet."); }
+
+// ------------------ PHYSICS (simple pendulum) ------------------
+function step(dt) {
+  // dt is in seconds; use simSpeed as a time multiplier (0..1 per your slider)
+  const h = dt * simSpeed;
+  if (h <= 0) return;
+
+  // Equation: theta¨ = -(g/L) sin(theta) - damping * theta˙
+  alpha = -(g / L) * Math.sin(theta) - damping * omega;
+  omega += alpha * h;
+  theta += omega * h;
+}
+
+// ------------------ DRAWING ------------------
+function worldToCanvas(xm, ym) {
+  return {
+    x: offsetX + xm * scale,
+    y: offsetY - ym * scale
+  };
+}
+
+function drawAxes(drawCtx) {
+  drawCtx.clearRect(0, 0, canvas.width, canvas.height);
+  drawCtx.strokeStyle = "white";
+  drawCtx.lineWidth = 1;
+  drawCtx.font = "12px sans-serif";
+  drawCtx.fillStyle = "white";
+
+  // X axis
+  drawCtx.beginPath();
+  drawCtx.moveTo(0, offsetY);
+  drawCtx.lineTo(canvas.width, offsetY);
+  drawCtx.stroke();
+
+  // Y axis
+  drawCtx.beginPath();
+  drawCtx.moveTo(offsetX, 0);
+  drawCtx.lineTo(offsetX, canvas.height);
+  drawCtx.stroke();
+
+  const labelSpacingPx = 50;
+  const preloadLabels = 20;
+
+  // X-axis labels (meters)
+  for (let i = Math.floor((-offsetX - preloadLabels * labelSpacingPx) / labelSpacingPx);
+       i <= Math.ceil((canvas.width - offsetX + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
+    if (i === 0) continue;
+    let px = offsetX + i * labelSpacingPx;
+    let value = (i * labelSpacingPx) / scale;
+    drawCtx.fillText(value.toFixed(0), px - 8, offsetY + 15);
+  }
+
+  // Y-axis labels (meters)
+  for (let i = Math.floor((-offsetY - preloadLabels * labelSpacingPx) / labelSpacingPx);
+       i <= Math.ceil((canvas.height - offsetY + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
+    if (i === 0) continue;
+    let py = offsetY - i * labelSpacingPx;
+    let value = (i * labelSpacingPx) / scale;
+    drawCtx.fillText(value.toFixed(0), offsetX - 25, py + 4);
+  }
+}
+
+function drawPendulum(drawCtx) {
+  // Pivot at world (0,0) (i.e., at the axes intersection)
+  const pivot = worldToCanvas(0, 0);
+
+  // Bob position in *meters*
+  const x_m = L * Math.sin(theta);
+  const y_m = -L * Math.cos(theta); // negative because down is -y in our world coords
+
+  const bob = worldToCanvas(x_m, y_m);
+
+  // Rod
+  drawCtx.beginPath();
+  drawCtx.moveTo(pivot.x, pivot.y);
+  drawCtx.lineTo(bob.x, bob.y);
+  drawCtx.strokeStyle = "white";
+  drawCtx.lineWidth = 2;
+  drawCtx.stroke();
+
+  // Pivot
+  drawCtx.beginPath();
+  drawCtx.arc(pivot.x, pivot.y, 5, 0, 2 * Math.PI);
+  drawCtx.fillStyle = "#cdd6f4";
+  drawCtx.fill();
+
+  // Bob
+  drawCtx.beginPath();
+  drawCtx.arc(bob.x, bob.y, 10, 0, 2 * Math.PI);
+  drawCtx.fillStyle = "red";
+  drawCtx.fill();
+}
+
+function drawFrame() {
+  drawAxes(ctx);
+  drawPendulum(ctx);
 }
 
 // ------------------ STATS ------------------
-function updateStats(current) {
-    if (!current) return;
-    const vx = current.vx;
-    const vy = current.vy;
-    const speed = Math.sqrt(vx * vx + vy * vy);
-    const angle = Math.atan2(vy, vx) * (180 / Math.PI);
-    const gpe = parseFloat(gravitySlider.value) * current.y;
-    const ke = 0.5 * speed * speed;
-    const total = ke + gpe;
-    const energyLoss = Math.max(0, initialEnergy - total);
+function updateStats() {
+  // Linear speed at bob
+  const v = Math.abs(L * omega); // m/s
+  const height = L * (1 - Math.cos(theta)); // m above the lowest point
+  const PE = m * g * height;
+  const KE = 0.5 * m * (L * omega) * (L * omega);
+  const total = PE + KE;
 
-    statsDiv.innerHTML = `
-        Mass: 1 kg<br>
-        Velocity: ${speed.toFixed(2)} m/s<br>
-        Angle: ${angle.toFixed(1)}°<br>
-        GPE: ${gpe.toFixed(2)} J<br>
-        Kinetic Energy: ${ke.toFixed(2)} J<br>
-        Energy Lost: ${energyLoss.toFixed(2)} J
-    `;
-}
-
-// ------------------ PEAK ------------------
-function showPeak() {
-    if (points.length === 0) return;
-
-    let peak = points.slice(0, Math.floor(animationIndex) + 1)
-        .reduce((p, c) => c.y > p.y ? c : p, points[0]);
-
-    const px = offsetX + peak.x * scale;
-    const py = offsetY - peak.y * scale;
-
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = "yellow";
-
-    // Horizontal line
-    ctx.beginPath();
-    ctx.moveTo(offsetX, py);
-    ctx.lineTo(px, py);
-    ctx.stroke();
-
-    // Vertical line
-    ctx.beginPath();
-    ctx.moveTo(px, offsetY);
-    ctx.lineTo(px, py);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-    ctx.beginPath();
-    ctx.arc(px, py, 6, 0, 2 * Math.PI);
-    ctx.strokeStyle = "yellow";
-    ctx.stroke();
-}
-
-// ------------------ DRAW ------------------
-function drawAxes(drawCtx) {
-    drawCtx.clearRect(0, 0, canvas.width, canvas.height);
-    drawCtx.strokeStyle = "white";
-    drawCtx.lineWidth = 1;
-    drawCtx.font = "12px sans-serif";
-    drawCtx.fillStyle = "white";
-
-    // X axis
-    drawCtx.beginPath();
-    drawCtx.moveTo(0, offsetY);
-    drawCtx.lineTo(canvas.width, offsetY);
-    drawCtx.stroke();
-
-    // Y axis
-    drawCtx.beginPath();
-    drawCtx.moveTo(offsetX, 0);
-    drawCtx.lineTo(offsetX, canvas.height);
-    drawCtx.stroke();
-
-    const labelSpacingPx = 50;
-    const preloadLabels = 20;
-
-    // X-axis labels
-    for (let i = Math.floor((-offsetX - preloadLabels * labelSpacingPx) / labelSpacingPx);
-         i <= Math.ceil((canvas.width - offsetX + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
-        if (i === 0) continue;
-        let px = offsetX + i * labelSpacingPx;
-        let value = (i * labelSpacingPx) / scale;
-        drawCtx.fillText(value.toFixed(0), px - 8, offsetY + 15);
-    }
-
-    // Y-axis labels
-    for (let i = Math.floor((-offsetY - preloadLabels * labelSpacingPx) / labelSpacingPx);
-         i <= Math.ceil((canvas.height - offsetY + preloadLabels * labelSpacingPx) / labelSpacingPx); i++) {
-        if (i === 0) continue;
-        let py = offsetY - i * labelSpacingPx;
-        let value = (i * labelSpacingPx) / scale;
-        drawCtx.fillText(value.toFixed(0), offsetX - 25, py + 4);
-    }
-}
-
-function drawFrame(n) {
-    drawAxes(ctx);
-    if (!points || points.length === 0) return;
-
-    ctx.beginPath();
-    for (let i = 0; i <= n && i < points.length; i++) {
-        let px = offsetX + points[i].x * scale;
-        let py = offsetY - points[i].y * scale;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-    }
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    if (n < points.length) {
-        const p = points[n];
-        ctx.beginPath();
-        ctx.arc(offsetX + p.x * scale, offsetY - p.y * scale, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
-    }
-
-    if (showPeakEnabled) showPeak();
+  statsDiv.innerHTML = `
+    Mass: ${m.toFixed(2)} kg<br>
+    Length: ${L.toFixed(2)} m<br>
+    Angle: ${(theta * 180 / Math.PI).toFixed(1)}°<br>
+    ω (rad/s): ${omega.toFixed(3)}<br>
+    α (rad/s²): ${alpha.toFixed(3)}<br>
+    Speed: ${v.toFixed(3)} m/s<br>
+    PE: ${PE.toFixed(2)} J<br>
+    KE: ${KE.toFixed(2)} J<br>
+    Total Energy: ${total.toFixed(2)} J
+  `;
 }
 
 // ------------------ ZOOM ------------------
-function zoomIn() { scale *= 1.2; drawFrame(Math.floor(animationIndex)); }
-function zoomOut() { scale /= 1.2; drawFrame(Math.floor(animationIndex)); }
+function zoomIn()  { scale *= 1.2; drawFrame(); if (statsEnabled) updateStats(); }
+function zoomOut() { scale /= 1.2; drawFrame(); if (statsEnabled) updateStats(); }
+
+// ------------------ ANIMATION ------------------
+function animate(t) {
+  if (lastTime == null) lastTime = t;
+  const dt = Math.min(0.05, (t - lastTime) / 1000); // clamp for stability
+  lastTime = t;
+
+  step(dt);
+  drawFrame();
+  if (statsEnabled) updateStats();
+
+  if (isRunning) animationId = requestAnimationFrame(animate);
+}
 
 // ------------------ INIT ------------------
-window.onload = () => { drawAxes(ctx); };
+window.onload = () => {
+  // Seed from sliders
+  theta   = parseFloat(angle1Slider.value) * Math.PI / 180;
+  omega   = 0;
+  L       = parseFloat(length1Slider.value);
+  m       = parseFloat(mass1Slider.value);
+  g       = parseFloat(gravitySlider.value);
+  damping = parseFloat(airResSlider.value);
+  simSpeed= parseFloat(speedSlider.value);
+
+  syncLabels();
+  drawFrame();
+  if (statsEnabled) updateStats();
+};
+
+// Expose functions used by HTML
+window.toggleSimulation = toggleSimulation;
+window.resetSimulation  = resetSimulation;
+window.resetGravity     = resetGravity;
+window.zoomIn           = zoomIn;
+window.zoomOut          = zoomOut;
+window.enablePen2       = enablePen2;
+window.enablePen3       = enablePen3;
