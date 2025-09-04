@@ -1,0 +1,147 @@
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  font-family: sans-serif;
+
+  /* REMOVE fixed height to allow scrolling */
+  min-height: 100vh; /* instead of height: 100vh */
+  overflow-y: auto; /* allow vertical scroll */
+  padding: 10px;
+}
+
+/* Default: full-size canvas */
+#simCanvas {
+  width: 800px;
+  height: 500px;
+  border: 2px solid #89b4fa;
+  background-color: #11111b;
+  touch-action: none;
+  cursor: grab;
+}
+
+/* If screen width is less than canvas width, shrink proportionally */
+@media (max-width: 830px) {
+  #simCanvas {
+    width: 100%;      /* Shrink to fit screen */
+    height: auto;     /* Maintain aspect ratio */
+  }
+}
+
+.canvas-container {
+  position: relative;
+  display: inline-block;
+}
+
+#zoomControls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+#stats {
+  position: absolute;
+  top: 60px; /* push down below zoom buttons */
+  right: 10px; /* align with zoom buttons */
+  color: #89b4fa;
+  font-family: monospace;
+  background-color: rgba(0,0,0,0.5);
+  padding: 5px;
+  border-radius: 4px;
+}
+
+#controls {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-row label {
+  width: 160px; /* fixed label width */
+}
+
+.control-row input[type="range"] {
+  flex: 1;
+}
+
+.slider-value {
+  width: 80px;
+  text-align: right;
+}
+
+.slider-unit {
+  width: 40px;
+  text-align: left;
+}
+
+.control-row button {
+  margin-left: 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;       /* space between buttons */
+  margin-top: 10px;
+}
+
+.button-row button {
+  flex: 1;          /* buttons expand equally to fill row */
+  padding: 6px 12px;
+  background-color: #313244;
+  color: #cdd6f4;
+  border: 1px solid #89b4fa;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+
+button {
+  background-color: #313244;
+  color: #cdd6f4;
+  border: 1px solid #89b4fa;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #555;
+  border-radius: 4px;
+  outline: none;
+  margin: 0 5px;
+  vertical-align: middle;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+}
