@@ -13,7 +13,7 @@ let showPeakEnabled = false;
 let padding = 50;
 let offsetX = padding;
 let offsetY = canvas.height - padding;
-let scale = 10; // pixels per unit
+let scale = 2.5; // pixels per unit
 let simSpeed = 1; // animation speed multiplier
 
 // ------------------ ELEMENTS ------------------
