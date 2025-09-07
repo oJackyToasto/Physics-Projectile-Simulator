@@ -194,6 +194,7 @@ button {
   transition: background-color 0.2s ease;
 }
 
+
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
