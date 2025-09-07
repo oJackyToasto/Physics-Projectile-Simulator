@@ -45,7 +45,7 @@ body {
 /* Default: full-size canvas */
 #simCanvas {
   width: 800px;
-  height: 500px;
+  height: 550px;
   border: 2px solid #89b4fa;
   background-color: #11111b;
   touch-action: none;
@@ -79,13 +79,14 @@ body {
 
 #stats {
   position: absolute;
-  top: 60px; /* push down below zoom buttons */
-  right: 10px; /* align with zoom buttons */
+  top: 10px;      /* closer to the top of the canvas */
+  left: 10px;     /* move to the left side */
   color: #89b4fa;
   font-family: monospace;
   background-color: rgba(0,0,0,0.5);
   padding: 5px;
   border-radius: 4px;
+  z-index: 10;     /* make sure it sits above the canvas drawings */
 }
 
 #controls {
