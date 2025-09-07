@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Changed projectile_script.js default scale">
+    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Fixed pendulum_script.js logic">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pendulum/pendulum.html" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pendulum/pendulum_script.js" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum_script.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pendulum/pendulum_style.css" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum_style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -262,7 +262,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757253160878</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Fixed pendulum_script.js logic">
+      <option name="closed" value="true" />
+      <created>1757257653966</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1757257653966</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -289,6 +297,7 @@
     <MESSAGE value="Added index page" />
     <MESSAGE value="Added index page, fixed pendulum.html, added animations" />
     <MESSAGE value="Changed projectile_script.js default scale" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed projectile_script.js default scale" />
+    <MESSAGE value="Fixed pendulum_script.js logic" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed pendulum_script.js logic" />
   </component>
 </project>

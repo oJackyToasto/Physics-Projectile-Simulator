@@ -22,6 +22,7 @@ let simSpeed = 1;
 let isRunning = false;
 let animationId = null;
 let statsEnabled = false;
+let realPhysics = false;
 
 // Dragging
 
@@ -67,6 +68,7 @@ const airResSlider = document.getElementById("airRes");
 const speedSlider = document.getElementById("simSpeed");
 const toggleSecondBtn = document.getElementById("toggleSecondPendulum");
 const toggleThirdBtn = document.getElementById("toggleThirdPendulum");
+const toggleRealBtn = document.getElementById("toggleRealPhysics");
 
 // ------------------ UI LABELS ------------------
 function syncLabels() {
@@ -151,6 +153,12 @@ function bindSlider(index, angleId, massId, lengthId) {
   });
 }
 
+toggleRealBtn.addEventListener("click", () => {
+  realPhysics = !realPhysics;
+  toggleRealBtn.textContent = realPhysics
+      ? "Disable Real-Life Physics"
+      : "Enable Real-Life Physics (Caution)";
+});
 
 // Bind pendulum 1 initially
 bindSlider(0, "angle1", "mass1", "length1");
@@ -194,13 +202,126 @@ toggleThirdBtn.addEventListener("click", () => {
 
 // ------------------ PHYSICS ------------------
 function updatePhysics(dt) {
+  if (!realPhysics) {
+    updateSimplePhysics(dt);
+  } else {
+    updateRealPhysics(dt);
+  }
+}
+
+function updateSimplePhysics(dt) {
   pendulums.forEach(p => {
     if (!p.enabled) return;
-    p.alpha = -(g / p.L) * Math.sin(p.theta) - airResistance * p.omega;
-    p.omega += p.alpha * dt;
-    p.theta += p.omega * dt;
+    const h = dt * simSpeed;
+    p.alpha = - (g / p.L) * Math.sin(p.theta) - airResistance * p.omega;
+    p.omega += p.alpha * h;
+    p.theta += p.omega * h;
   });
 }
+
+function updateRealPhysics(dt) {
+  const h = dt * simSpeed;
+  if (h <= 0) return;
+
+  function rk4Step(p, alphaFunc) {
+    const theta0 = p.theta;
+    const omega0 = p.omega;
+
+    const k1_theta = omega0;
+    const k1_omega = alphaFunc(p);
+
+    const k2_theta = omega0 + 0.5 * h * k1_omega;
+    const k2_omega = alphaFunc({ ...p, theta: theta0 + 0.5*h*k1_theta, omega: omega0 + 0.5*h*k1_omega });
+
+    const k3_theta = omega0 + 0.5 * h * k2_omega;
+    const k3_omega = alphaFunc({ ...p, theta: theta0 + 0.5*h*k2_theta, omega: omega0 + 0.5*h*k2_omega });
+
+    const k4_theta = omega0 + h * k3_omega;
+    const k4_omega = alphaFunc({ ...p, theta: theta0 + h*k3_theta, omega: omega0 + h*k3_omega });
+
+    p.theta += (h/6)*(k1_theta + 2*k2_theta + 2*k3_theta + k4_theta);
+    p.omega += (h/6)*(k1_omega + 2*k2_omega + 2*k3_omega + k4_omega);
+  }
+
+  if (pendulums[0].enabled && !pendulums[1].enabled) {
+    const p = pendulums[0];
+    rk4Step(p, p => - (g / p.L) * Math.sin(p.theta) - airResistance * p.omega);
+    p.alpha = - (g / p.L) * Math.sin(p.theta) - airResistance * p.omega;
+  }
+
+  if (pendulums[1].enabled && !pendulums[2].enabled) {
+    const p1 = pendulums[0];
+    const p2 = pendulums[1];
+
+    function alpha1(p) {
+      const {theta1, omega1, theta2, omega2, L1, L2, m1, m2} = {
+        theta1: p1.theta, omega1: p1.omega,
+        theta2: p2.theta, omega2: p2.omega,
+        L1: p1.L, L2: p2.L,
+        m1: p1.m, m2: p2.m
+      };
+      const num = -g*(2*m1+m2)*Math.sin(theta1) - m2*g*Math.sin(theta1-2*theta2) - 2*Math.sin(theta1-theta2)*m2*(omega2*omega2*L2 + omega1*omega1*L1*Math.cos(theta1-theta2));
+      const den = L1*(2*m1+m2 - m2*Math.cos(2*(theta1-theta2)));
+      return num/den - airResistance*omega1;
+    }
+
+    function alpha2(p) {
+      const {theta1, omega1, theta2, omega2, L1, L2, m1, m2} = {
+        theta1: p1.theta, omega1: p1.omega,
+        theta2: p2.theta, omega2: p2.omega,
+        L1: p1.L, L2: p2.L,
+        m1: p1.m, m2: p2.m
+      };
+      const num = 2*Math.sin(theta1-theta2)*(omega1*omega1*L1*(m1+m2) + g*(m1+m2)*Math.cos(theta1) + omega2*omega2*L2*m2*Math.cos(theta1-theta2));
+      const den = L2*(2*m1+m2 - m2*Math.cos(2*(theta1-theta2)));
+      return num/den - airResistance*omega2;
+    }
+
+    rk4Step(p1, alpha1);
+    rk4Step(p2, alpha2);
+
+    p1.alpha = alpha1(p1);
+    p2.alpha = alpha2(p2);
+  }
+
+  if (pendulums[2].enabled) {
+    const p1 = pendulums[0], p2 = pendulums[1], p3 = pendulums[2];
+
+    function alphaA(pA, pB) {
+      const {theta1, omega1, theta2, omega2, L1, L2, m1, m2} = {
+        theta1: pA.theta, omega1: pA.omega,
+        theta2: pB.theta, omega2: pB.omega,
+        L1: pA.L, L2: pB.L,
+        m1: pA.m, m2: pB.m
+      };
+      const num = -g*(2*m1+m2)*Math.sin(theta1) - m2*g*Math.sin(theta1-2*theta2) - 2*Math.sin(theta1-theta2)*m2*(omega2*omega2*L2 + omega1*omega1*L1*Math.cos(theta1-theta2));
+      const den = L1*(2*m1+m2 - m2*Math.cos(2*(theta1-theta2)));
+      return num/den - airResistance*omega1;
+    }
+    function alphaB(pA, pB) {
+      const {theta1, omega1, theta2, omega2, L1, L2, m1, m2} = {
+        theta1: pA.theta, omega1: pA.omega,
+        theta2: pB.theta, omega2: pB.omega,
+        L1: pA.L, L2: pB.L,
+        m1: pA.m, m2: pB.m
+      };
+      const num = 2*Math.sin(theta1-theta2)*(omega1*omega1*L1*(m1+m2) + g*(m1+m2)*Math.cos(theta1) + omega2*omega2*L2*m2*Math.cos(theta1-theta2));
+      const den = L2*(2*m1+m2 - m2*Math.cos(2*(theta1-theta2)));
+      return num/den - airResistance*omega2;
+    }
+
+    rk4Step(p1, p => alphaA(p1,p2));
+    rk4Step(p2, p => alphaB(p1,p2));
+    rk4Step(p2, p => alphaA(p2,p3));
+    rk4Step(p3, p => alphaB(p2,p3));
+
+    p1.alpha = alphaA(p1,p2);
+    p2.alpha = alphaB(p1,p2);
+    p3.alpha = alphaB(p2,p3);
+  }
+}
+
+
 
 // ------------------ DRAWING ------------------
 function worldToCanvas(x_m, y_m) {
@@ -402,7 +523,6 @@ toggleStatsBtn.addEventListener("click", () => {
   if (statsEnabled) updateStats();
   else statsDiv.innerHTML = "";
 });
-
 // ------------------ INIT ------------------
 window.onload = () => {
   syncLabels();
