@@ -13,6 +13,35 @@ body {
   padding: 10px;
 }
 
+.navigator {
+  position: fixed;       /* stays on top-left even when scrolling */
+  top: 20px;
+  left: 20px;
+  padding: 6px 12px;
+  background-color: #313244;
+  color: #cdd6f4;
+  border: 1px solid #89b4fa;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 1000;         /* ensure it's above other elements */
+  transition: background-color 0.2s ease;
+}
+
+.navigator a {
+  color: #ffffff;        /* white text */
+  font-weight: bold;      /* bold */
+  text-decoration: none;  /* remove underline */
+  display: block;         /* fill the button */
+  width: 100%;
+  height: 100%;
+}
+
+
+.navigator:hover {
+  background-color: #45475a;
+}
+
 /* Default: full-size canvas */
 #simCanvas {
   width: 800px;
@@ -44,6 +73,10 @@ body {
   gap: 5px;
 }
 
+#zoomControls button:hover {
+  background-color: #45475a;
+}
+
 #stats {
   position: absolute;
   top: 60px; /* push down below zoom buttons */
@@ -63,12 +96,24 @@ body {
 }
 
 .pendulum_control {
-  border: 2px solid #666; /* thicker and more visible */
+  border: 2px solid #666;
   padding: 10px;
-  margin-bottom: 10px;
   border-radius: 8px;
   background: #222;
+  /* REMOVE margin-bottom */
 }
+
+/* Apply consistent spacing between pendulum controls */
+.pendulum_control:not(:last-child) {
+  margin-bottom: -px; /* or whatever spacing you need */
+}
+
+/* Target only the first-level children of extraPendulumContainer */
+#extraPendulumContainer > .pendulum_control {
+  margin-top: 0px;   /* space between pendulums */
+  margin-bottom: 10px;   /* optional, can keep 0 */
+}
+
 
 .control-row {
   display: flex;
@@ -85,6 +130,10 @@ body {
 
 .control-row input[type="range"] {
   flex: 1;
+}
+
+.control-row button:hover {
+    background-color: #45475a;
 }
 
 .slider-value {
@@ -117,7 +166,6 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease;
 }
 
 .button-row button:hover {
@@ -143,6 +191,7 @@ button {
   margin: 4px;
   border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 input[type="range"] {

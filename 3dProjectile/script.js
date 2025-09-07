@@ -224,6 +224,26 @@ function project3D(x, y, z){
     return [px, py];
 }
 
+function resetTiltX() {
+    tiltXSlider.value = 0;
+    tiltX = 0;
+    document.getElementById("tiltXValue").innerText = "0°";
+    drawFrame(Math.floor(animationIndex));
+}
+
+function resetTiltY() {
+    tiltYSlider.value = 0;
+    tiltY = 0;
+    document.getElementById("tiltYValue").innerText = "0°";
+    drawFrame(Math.floor(animationIndex));
+}
+
+function resetTiltZ() {
+    tiltZSlider.value = 0;
+    tiltZ = 0;
+    document.getElementById("tiltZValue").innerText = "0°";
+    drawFrame(Math.floor(animationIndex));
+}
 
 // ------------------ DRAW ------------------
 function drawAxes(drawCtx){

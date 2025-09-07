@@ -8,16 +8,32 @@ let offsetX = canvas.width / 2; // place Y-axis center
 let offsetY = 100;              // place X-axis near the top, making room for the pendulum
 let padding = 50;
 
-// Simulation state (single pendulum)
-let theta = 45 * Math.PI / 180; // radians
-let omega = 0;                  // rad/s
-let alpha = 0;                  // rad/s^2
+// First Pendulum
+let theta1 = Math.PI / 4; // 45 degrees default
+let omega1 = 0;
+let alpha1 = 0;
+let L1 = 10;
+let m1 = 1;
 
-// Controls (read live from sliders, but keep cached copies for speed)
-let L = 10;     // meters
-let m = 1;      // kg
-let g = 9.8;    // m/s^2
-let damping = 0; // 1/s (interpret "airRes" as damping coefficient)
+// Second Pendulum
+let theta2 = Math.PI / 4;
+let omega2 = 0;
+let alpha2 = 0;
+let L2 = 10;
+let m2 = 1;
+let secondPendulumEnabled = false;
+
+// Third Pendulum
+let theta3 = Math.PI / 4;
+let omega3 = 0;
+let alpha3 = 0;
+let L3 = 10;
+let m3 = 1;
+let thirdPendulumEnabled = false;
+
+// Gravity, air resistance, and sim speed
+let g = 9.8;
+let airResistance = 0;
 let simSpeed = 1;
 
 let isRunning = false;
@@ -25,8 +41,50 @@ let animationId = null;
 let lastTime = null;
 
 let statsEnabled = false;
-let secondPendulumEnabled = false;
-let thirdPendulumEnabled = false;
+
+// ---- Pendulum 1 ----
+document.getElementById("angle1").addEventListener("input", e => {
+  theta1 = parseFloat(e.target.value) * Math.PI / 180;
+  document.getElementById("angle1Value").textContent = e.target.value + "°";
+});
+document.getElementById("mass1").addEventListener("input", e => {
+  m1 = parseFloat(e.target.value);
+  document.getElementById("mass1Value").textContent = m1.toFixed(1) + "kg";
+});
+document.getElementById("length1").addEventListener("input", e => {
+  L1 = parseFloat(e.target.value);
+  document.getElementById("length1Value").textContent = L1.toFixed(1) + "m";
+});
+
+if (secondPendulumEnabled) {
+    document.getElementById("angle2").addEventListener("input", e => {
+    theta2 = parseFloat(e.target.value) * Math.PI / 180;
+    document.getElementById("angle2Value").textContent = e.target.value + "°";
+  });
+  document.getElementById("mass2").addEventListener("input", e => {
+    m2 = parseFloat(e.target.value);
+    document.getElementById("mass2Value").textContent = m2.toFixed(1) + "kg";
+  });
+  document.getElementById("length2").addEventListener("input", e => {
+    L2 = parseFloat(e.target.value);
+    document.getElementById("length2Value").textContent = L2.toFixed(1) + "m";
+  });
+}
+
+if (thirdPendulumEnabled) {
+    document.getElementById("angle3").addEventListener("input", e => {
+    theta3 = parseFloat(e.target.value) * Math.PI / 180;
+    document.getElementById("angle3Value").textContent = e.target.value + "°";
+  });
+  document.getElementById("mass3").addEventListener("input", e => {
+    m3 = parseFloat(e.target.value);
+    document.getElementById("mass3Value").textContent = m3.toFixed(1) + "kg";
+  });
+  document.getElementById("length3").addEventListener("input", e => {
+    L3 = parseFloat(e.target.value);
+    document.getElementById("length3Value").textContent = L3.toFixed(1) + "m";
+  });
+}
 
 // ------------------ ELEMENTS ------------------
 const statsDiv = document.getElementById("stats");
@@ -51,6 +109,61 @@ function syncLabels() {
   document.getElementById("airResValue").innerText = airResSlider.value + " N*s/m²";
   document.getElementById("simSpeedValue").innerText = speedSlider.value + "x";
 }
+
+function bindExtraSliders() {
+  const pendulums = [
+    { enabled: secondPendulumEnabled, id: 2, theta: 'theta2', omega: 'omega2', alpha: 'alpha2', L: 'L2', m: 'm2' },
+    { enabled: thirdPendulumEnabled, id: 3, theta: 'theta3', omega: 'omega3', alpha: 'alpha3', L: 'L3', m: 'm3' }
+  ];
+
+  pendulums.forEach(p => {
+    if (!p.enabled) return;
+
+    const angleSlider = document.getElementById(`angle${p.id}`);
+    const massSlider = document.getElementById(`mass${p.id}`);
+    const lengthSlider = document.getElementById(`length${p.id}`);
+
+    if (!angleSlider || !massSlider || !lengthSlider) return;
+
+    // Angle slider
+    if (!angleSlider.dataset.bound) {
+      angleSlider.addEventListener("input", e => {
+        window[p.theta] = parseFloat(e.target.value) * Math.PI / 180;
+        window[p.omega] = 0;
+        window[p.alpha] = 0;
+        drawFrame();
+        if (statsEnabled) updateStats();
+        document.getElementById(`angle${p.id}Value`).textContent = e.target.value + "°";
+      });
+      angleSlider.dataset.bound = "true";
+    }
+
+    // Mass slider
+    if (!massSlider.dataset.bound) {
+      massSlider.addEventListener("input", e => {
+        window[p.m] = parseFloat(e.target.value);
+        drawFrame();
+        if (statsEnabled) updateStats();
+        document.getElementById(`mass${p.id}Value`).textContent = parseFloat(e.target.value).toFixed(1) + "kg";
+      });
+      massSlider.dataset.bound = "true";
+    }
+
+    // Length slider
+    if (!lengthSlider.dataset.bound) {
+      lengthSlider.addEventListener("input", e => {
+        window[p.L] = parseFloat(e.target.value);
+        drawFrame();
+        if (statsEnabled) updateStats();
+        document.getElementById(`length${p.id}Value`).textContent = parseFloat(e.target.value).toFixed(1) + "m";
+      });
+      lengthSlider.dataset.bound = "true";
+    }
+  });
+}
+
+
+
 
 // ------------------ STATS TOGGLE ------------------
 toggleStatsBtn.addEventListener("click", () => {
@@ -107,11 +220,13 @@ const pendulum3HTML = `
 `;
 
 // Handle second pendulum toggle
+// Handle second pendulum toggle
 toggleSecondBtn.addEventListener("click", () => {
   if (!secondPendulumEnabled) {
     // Enable second pendulum
     extraContainer.innerHTML = pendulum2HTML;
     secondPendulumEnabled = true;
+    bindExtraSliders(); // <-- THIS ensures event listeners are added instantly
     toggleSecondBtn.textContent = "Disable 2nd Pendulum";
     toggleThirdBtn.style.display = "block"; // show 3rd toggle button
   } else {
@@ -125,16 +240,20 @@ toggleSecondBtn.addEventListener("click", () => {
   }
 });
 
-// Handle third pendulum toggle
+// Toggle third pendulum
 toggleThirdBtn.addEventListener("click", () => {
   if (!thirdPendulumEnabled) {
-    // Add pendulum 3 under pendulum 2
-    extraContainer.innerHTML = pendulum2HTML + pendulum3HTML;
-    thirdPendulumEnabled = true;
-    toggleThirdBtn.textContent = "Disable 3rd Pendulum";
+    // Append pendulum 3 only if it's not already there
+    if (!document.getElementById("pen3")) {
+      extraContainer.insertAdjacentHTML('beforeend', pendulum3HTML);
+      thirdPendulumEnabled = true;
+      bindExtraSliders();  // attach listeners only to new elements
+      toggleThirdBtn.textContent = "Disable 3rd Pendulum";
+    }
   } else {
-    // Remove pendulum 3 but keep pendulum 2
-    extraContainer.innerHTML = pendulum2HTML;
+    // Remove pendulum 3
+    const pen3 = document.getElementById("pen3");
+    if (pen3) pen3.remove();
     thirdPendulumEnabled = false;
     toggleThirdBtn.textContent = "Enable 3rd Pendulum";
   }
@@ -246,30 +365,50 @@ function resetGravity() {
 }
 
 function toggleSimulation() {
-  if (!isRunning) {
-    isRunning = true;
-    lastTime = null; // reset time base
-    document.getElementById("runBtn").innerText = "Pause";
-    animationId = requestAnimationFrame(animate);
+  isRunning = !isRunning;
+  if (isRunning) {
+    runAnimation();
+    document.getElementById("runBtn").textContent = "Pause";
   } else {
-    isRunning = false;
-    document.getElementById("runBtn").innerText = "Run";
     cancelAnimationFrame(animationId);
+    document.getElementById("runBtn").textContent = "Run";
   }
 }
 
 function resetSimulation() {
+  // Pause the simulation
   isRunning = false;
   cancelAnimationFrame(animationId);
-  document.getElementById("runBtn").innerText = "Run";
+  document.getElementById("runBtn").textContent = "Run";
 
-  // Reset from sliders
-  theta = parseFloat(angle1Slider.value) * Math.PI / 180;
-  omega = 0;
-  // L, m, g, damping already tracked live
+  // ---- Reset pendulum 1 ----
+  theta1 = parseFloat(angle1Slider.value) * Math.PI / 180;
+  omega1 = 0;
+  alpha1 = 0;
+
+  // ---- Reset pendulum 2 ----
+  if (secondPendulumEnabled) {
+    const angle2Slider = document.getElementById("angle2");
+    theta2 = parseFloat(angle2Slider.value) * Math.PI / 180;
+    omega2 = 0;
+    alpha2 = 0;
+  }
+
+  // ---- Reset pendulum 3 ----
+  if (thirdPendulumEnabled) {
+    const angle3Slider = document.getElementById("angle3");
+    theta3 = parseFloat(angle3Slider.value) * Math.PI / 180;
+    omega3 = 0;
+    alpha3 = 0;
+  }
+
+  // Redraw frame and stats
   drawFrame();
   if (statsEnabled) updateStats();
 }
+
+
+
 
 // Stubs so your buttons don’t error out yet
 function enablePen2() { alert("Second pendulum not implemented yet."); }
@@ -288,17 +427,29 @@ function step(dt) {
 }
 
 // ------------------ DRAWING ------------------
-function worldToCanvas(xm, ym) {
-  // world: x right, y down
-  return {
-    x: offsetX + xm * scale,
-    y: offsetY + ym * scale
-  };
+function worldToCanvas(x_m, y_m) {
+    // pivotCanvasY = vertical position of pivot in canvas coordinates
+    // positive y downward on canvas
+    const pivotCanvas = { x: offsetX, y: offsetY }; // offsetX/Y as before
+
+    return {
+        x: pivotCanvas.x + x_m * scale,
+        y: pivotCanvas.y - y_m * scale // ⚠ flip y
+    };
 }
 
 function getTotalLength() {
-  // For now only one pendulum:
-  return L; // later we can add + L2 + L3 when you implement them
+  let total = L1;
+  if (secondPendulumEnabled) total += L2;
+  if (thirdPendulumEnabled) total += L3;
+  return total;
+}
+
+function runAnimation() {
+  const dt = 0.016 * simSpeed; // ~60fps timestep
+  updatePhysics(dt);
+  drawFrame();
+  if (isRunning) animationId = requestAnimationFrame(runAnimation);
 }
 
 function drawAxes(drawCtx) {
@@ -344,40 +495,113 @@ function drawAxes(drawCtx) {
   }
 }
 
-function drawPendulum(drawCtx) {
-  const pivot = worldToCanvas(0, 0);            // pivot at world (0,0)
-  const totalLength = getTotalLength();        // L1 + L2 + ... later
+function drawPendulum(ctx) {
+  const pivot = worldToCanvas(0, 0);
 
-  // Bob position (world coords): x right, y down
-  const x_m = L * Math.sin(theta);
-  const y_m = L * Math.cos(theta);   // at theta=0 -> y_m = L (bob below pivot by L)
+  // Step 1: First pendulum
+  const x1 = L1 * Math.sin(theta1);
+  const y1 = -L1 * Math.cos(theta1);
 
-  const bob = worldToCanvas(x_m, y_m);
+  const bob1 = worldToCanvas(x1, y1);
 
-  // Rod
-  drawCtx.beginPath();
-  drawCtx.moveTo(pivot.x, pivot.y);
-  drawCtx.lineTo(bob.x, bob.y);
-  drawCtx.strokeStyle = "white";
-  drawCtx.lineWidth = 2;
-  drawCtx.stroke();
+  // Draw rod 1
+  ctx.beginPath();
+  ctx.moveTo(pivot.x, pivot.y);
+  ctx.lineTo(bob1.x, bob1.y);
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Draw bob 1
+  ctx.beginPath();
+  ctx.arc(bob1.x, bob1.y, 10, 0, 2 * Math.PI);
+  ctx.fillStyle = "red";
+  ctx.fill();
+
+  let lastX = x1;
+  let lastY = y1;
+
+  // Step 2: Second pendulum (if enabled)
+  if (secondPendulumEnabled) {
+    const x2 = lastX + L2 * Math.sin(theta2);
+    const y2 = lastY - L2 * Math.cos(theta2);
+
+    const bob2 = worldToCanvas(x2, y2);
+
+    // Rod 2
+    ctx.beginPath();
+    ctx.moveTo(bob1.x, bob1.y);
+    ctx.lineTo(bob2.x, bob2.y);
+    ctx.strokeStyle = "yellow";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Bob 2
+    ctx.beginPath();
+    ctx.arc(bob2.x, bob2.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = "orange";
+    ctx.fill();
+
+    lastX = x2;
+    lastY = y2;
+  }
+
+  // Step 3: Third pendulum (if enabled)
+  if (thirdPendulumEnabled) {
+    const x3 = lastX + L3 * Math.sin(theta3);
+    const y3 = lastY - L3 * Math.cos(theta3);
+
+    const bob3 = worldToCanvas(x3, y3);
+
+    // Rod 3
+    ctx.beginPath();
+    ctx.moveTo(worldToCanvas(lastX, lastY).x, worldToCanvas(lastX, lastY).y);
+    ctx.lineTo(bob3.x, bob3.y);
+    ctx.strokeStyle = "lightgreen";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Bob 3
+    ctx.beginPath();
+    ctx.arc(bob3.x, bob3.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = "green";
+    ctx.fill();
+  }
 
   // Pivot
-  drawCtx.beginPath();
-  drawCtx.arc(pivot.x, pivot.y, 5, 0, 2 * Math.PI);
-  drawCtx.fillStyle = "#cdd6f4";
-  drawCtx.fill();
+  ctx.beginPath();
+  ctx.arc(pivot.x, pivot.y, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = "#cdd6f4";
+  ctx.fill();
+}
 
-  // Bob
-  drawCtx.beginPath();
-  drawCtx.arc(bob.x, bob.y, 10, 0, 2 * Math.PI);
-  drawCtx.fillStyle = "red";
-  drawCtx.fill();
+
+function updatePhysics(dt) {
+  // Apply simple pendulum physics to each active pendulum
+
+  // ---- Pendulum 1 ----
+  alpha1 = (-g / L1) * Math.sin(theta1) - (airResistance * omega1);
+  omega1 += alpha1 * dt;
+  theta1 += omega1 * dt;
+
+  // ---- Pendulum 2 ----
+  if (secondPendulumEnabled) {
+    alpha2 = (-g / L2) * Math.sin(theta2) - (airResistance * omega2);
+    omega2 += alpha2 * dt;
+    theta2 += omega2 * dt;
+  }
+
+  // ---- Pendulum 3 ----
+  if (thirdPendulumEnabled) {
+    alpha3 = (-g / L3) * Math.sin(theta3) - (airResistance * omega3);
+    omega3 += alpha3 * dt;
+    theta3 += omega3 * dt;
+  }
 }
 
 
 function drawFrame() {
-  drawAxes(ctx);
+  drawAxes(ctx); // optional if you have axes
   drawPendulum(ctx);
 }
 

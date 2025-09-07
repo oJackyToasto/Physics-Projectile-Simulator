@@ -4,11 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added Mobile Compatibility">
+    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Added JS support for Dynamic UI pendulum">
+      <change afterPath="$PROJECT_DIR$/projectile/projectile.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/projectile/projectile_style.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/3dProjectile/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/3dProjectile/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/3dProjectile/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/3dProjectile/script.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/3dProjectile/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/3dProjectile/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pendulum/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pendulum/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum_script.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pendulum/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/pendulum/pendulum_style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/projectile/projectile_script.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,11 +58,16 @@
   &quot;keyToString&quot;: {
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/MadeByMe/Programmes/Physics Projectile Simulator/pendulum&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\MadeByMe\Programmes\Physics Projectile Simulator\pendulum" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\MadeByMe\Programmes\Physics Projectile Simulator\projectile" />
       <recent name="D:\MadeByMe\Programmes\Physics Projectile Simulator" />
     </key>
   </component>
@@ -202,7 +215,39 @@
       <option name="project" value="LOCAL" />
       <updated>1756902630853</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Added Initial commit for Pendulum">
+      <option name="closed" value="true" />
+      <created>1756959532289</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1756959532289</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Added function for 1 pendulum">
+      <option name="closed" value="true" />
+      <created>1756960765455</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1756960765455</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Fixed bugs and added ui for 2nd and 3rd pendulum">
+      <option name="closed" value="true" />
+      <created>1756962117906</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1756962117906</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Added JS support for Dynamic UI pendulum">
+      <option name="closed" value="true" />
+      <created>1756962379811</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1756962379811</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -222,6 +267,10 @@
     <MESSAGE value="Fixed Title Cutoff" />
     <MESSAGE value="Fixed Canvas Cutoff" />
     <MESSAGE value="Added Mobile Compatibility" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added Mobile Compatibility" />
+    <MESSAGE value="Added Initial commit for Pendulum" />
+    <MESSAGE value="Added function for 1 pendulum" />
+    <MESSAGE value="Fixed bugs and added ui for 2nd and 3rd pendulum" />
+    <MESSAGE value="Added JS support for Dynamic UI pendulum" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added JS support for Dynamic UI pendulum" />
   </component>
 </project>
