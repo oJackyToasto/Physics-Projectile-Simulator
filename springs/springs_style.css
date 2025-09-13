@@ -96,7 +96,7 @@ body {
   gap: 10px;
 }
 
-.pendulum_control {
+.spring-control {
   border: 2px solid #666;
   padding: 10px;
   border-radius: 8px;
@@ -105,12 +105,12 @@ body {
 }
 
 /* Apply consistent spacing between pendulum controls */
-.pendulum_control:not(:last-child) {
+.spring-control:not(:last-child) {
   margin-bottom: -px; /* or whatever spacing you need */
 }
 
 /* Target only the first-level children of extraPendulumContainer */
-#extraPendulumContainer > .pendulum_control {
+#extraSpringContainer > .spring-control {
   margin-top: 0px;   /* space between pendulums */
   margin-bottom: 10px;   /* optional, can keep 0 */
 }

@@ -69,6 +69,7 @@ const speedSlider = document.getElementById("simSpeed");
 const toggleSecondBtn = document.getElementById("toggleSecondPendulum");
 const toggleThirdBtn = document.getElementById("toggleThirdPendulum");
 const toggleRealBtn = document.getElementById("toggleRealPhysics");
+const gravityReset = document.getElementById("gravityReset");
 
 // ------------------ UI LABELS ------------------
 function syncLabels() {
@@ -515,6 +516,11 @@ function zoomOut() { scale /= 1.2; drawFrame(); }
 gravitySlider.addEventListener("input", e => { g = parseFloat(e.target.value); syncLabels(); if(statsEnabled) updateStats(); });
 airResSlider.addEventListener("input", e => { airResistance = parseFloat(e.target.value); syncLabels(); });
 speedSlider.addEventListener("input", e => { simSpeed = parseFloat(e.target.value); syncLabels(); });
+
+function resetGravity() {
+    gravitySlider.value = 9.8;
+    document.getElementById("gravityValue").innerText = gravitySlider.value + " m/s²";
+}
 
 // ------------------ STATS TOGGLE ------------------
 toggleStatsBtn.addEventListener("click", () => {
