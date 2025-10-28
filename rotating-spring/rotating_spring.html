@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rotating Spring Simulator</title>
+  <link rel="stylesheet" href="rotating_spring_style.css">
+</head>
+<body>
+
+<button class="navigator"><a href="../index.html">&lt; back</a></button>
+
+<div class="title">
+  <h2>Rotating Spring Simulator</h2>
+</div>
+
+<div class="canvas-container">
+  <canvas id="simCanvas" width="800" height="500"></canvas>
+
+  <div id="zoomControls">
+    <button onclick="zoomIn()">+</button>
+    <button onclick="zoomOut()">-</button>
+  </div>
+
+  <div id="stats">
+    <!-- Stats will appear here -->
+  </div>
+</div>
+
+
+
+<div id="controls">
+  <div class="control-row">
+    <label for="angularSpeed">Angular Speed:</label>
+    <input type="range" id="angularSpeed" min="0" max="5" step="0.1" value="2">
+    <span class="slider-value" id="angularSpeedValue">2.0 rad/s</span>
+  </div>
+
+  <div class="control-row">
+    <label for="springConstant">Spring Constant (k):</label>
+    <input type="range" id="springConstant" min="0.1" max="20" step="0.1" value="5">
+    <span class="slider-value" id="springConstantValue">5.0 N/m</span>
+  </div>
+
+  <div class="control-row">
+    <label for="restLength">Rest Length:</label>
+    <input type="range" id="restLength" min="1" max="15" step="0.5" value="5">
+    <span class="slider-value" id="restLengthValue">5.0 m</span>
+  </div>
+
+  <div class="control-row">
+    <label for="mass">Mass:</label>
+    <input type="range" id="mass" min="0.5" max="10" step="0.1" value="1">
+    <span class="slider-value" id="massValue">1.0 kg</span>
+  </div>
+
+  <div class="control-row">
+    <label for="simSpeed">Simulation Speed:</label>
+    <input type="range" id="simSpeed" min="0" max="2" step="0.1" value="1">
+    <span class="slider-value" id="simSpeedValue">1.0×</span>
+  </div>
+
+  <div class="button-row">
+    <button id="toggleStatsBtn">Show Stats</button>
+    <button id="toggleTerminalSpeedBtn">Show Terminal Speed</button>
+  </div>
+
+  <div class="button-row">
+    <button id="runBtn" onclick="toggleSimulation()">Run</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="resetSimulation()">Reset</button>
+  </div>
+</div>
+
+<script src="rotating_spring_script.js"></script>
+</body>
+</html>

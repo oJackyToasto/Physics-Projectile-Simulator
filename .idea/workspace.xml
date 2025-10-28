@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="Copied springs.html, springs_script.js, springs_style.css from pendulum">
+    <list default="true" id="a07d5961-232d-4d39-a15a-2baca571f8f2" name="Changes" comment="fixed pendulum_script.js reset gravity">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springs/springs.html" beforeDir="false" afterPath="$PROJECT_DIR$/springs/springs.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springs/springs_script.js" beforeDir="false" afterPath="$PROJECT_DIR$/springs/springs_script.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/springs/springs_style.css" beforeDir="false" afterPath="$PROJECT_DIR$/springs/springs_style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,14 +43,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/MadeByMe/Programmes/Physics Projectile Simulator/springs"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/MadeByMe/Programmes/Physics Projectile Simulator/springs&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\MadeByMe\Programmes\Physics Projectile Simulator\springs" />
@@ -288,11 +285,18 @@
       <option name="project" value="LOCAL" />
       <updated>1757258551270</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="fixed pendulum_script.js reset gravity">
+      <option name="closed" value="true" />
+      <created>1757735102246</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1757735102246</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Initial Commint" />
     <MESSAGE value="Fixed Bugs" />
     <MESSAGE value="Added &quot;Gravity&quot; slider" />
     <MESSAGE value="Added &quot;AirRes&quot; Slider" />
@@ -317,6 +321,7 @@
     <MESSAGE value="Changed projectile_script.js default scale" />
     <MESSAGE value="Fixed pendulum_script.js logic" />
     <MESSAGE value="Copied springs.html, springs_script.js, springs_style.css from pendulum" />
-    <option name="LAST_COMMIT_MESSAGE" value="Copied springs.html, springs_script.js, springs_style.css from pendulum" />
+    <MESSAGE value="fixed pendulum_script.js reset gravity" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed pendulum_script.js reset gravity" />
   </component>
 </project>

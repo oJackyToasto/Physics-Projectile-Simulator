@@ -1,0 +1,1 @@
+Firstly, add a button above run "Show Peak" that displays the highest point of the projectile  with a hollow circle, having dotted lines vertically and horisontally. add another button "Show Stats" that displays the Mass (1kg), Velocity, angle, GPE and Kinetic Energy, assuming the ball is a ball of 1kg with diameter of 1m.
