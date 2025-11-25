@@ -259,6 +259,7 @@ function updateStats() {
     const springForce = springConstant * stretch;
     const centrifugalForce = mass * angularSpeed * angularSpeed * spring.length;
     const tangentialVelocity = spring.length * angularSpeed;
+    const momentum = mass * tangentialVelocity;
     const kineticEnergy = 0.5 * mass * tangentialVelocity * tangentialVelocity;
     const springPotential = 0.5 * springConstant * stretch * stretch;
     const totalEnergy = kineticEnergy + springPotential;

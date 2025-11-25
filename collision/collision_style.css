@@ -77,7 +77,7 @@ body {
 #stats {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   color: #89b4fa;
   font-family: monospace;
   background-color: rgba(0,0,0,0.5);
