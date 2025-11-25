@@ -303,11 +303,15 @@ function updateStats() {
     const kinetic1 = 0.5 * m1 * movingBlock.v * movingBlock.v;
     const kinetic2 = 0.5 * m2 * stationaryBlock.v * stationaryBlock.v;
     const totalKinetic = kinetic1 + kinetic2;
+    const momentum1 = m1 * movingBlock.v;
+    const momentum2 = m2 * stationaryBlock.v;
+    const totalMomentum = momentum1 + momentum2;
     
     let html = `
         <strong>Moving Block</strong><br>
         Position: ${movingBlock.x.toFixed(1)} px<br>
         Velocity: ${movingBlock.v.toFixed(2)} m/s<br>
+        Momentum: ${momentum1.toFixed(2)} kg·m/s<br>
         Mass: ${m1.toFixed(1)} kg<br>
         Size: ${massToSize(m1).toFixed(1)} px<br>
         KE: ${kinetic1.toFixed(2)} J<br>
@@ -315,12 +319,16 @@ function updateStats() {
         <strong>Stationary Block</strong><br>
         Position: ${stationaryBlock.x.toFixed(1)} px<br>
         Velocity: ${stationaryBlock.v.toFixed(2)} m/s<br>
+        Momentum: ${momentum2.toFixed(2)} kg·m/s<br>
         Mass: ${m2.toFixed(1)} kg<br>
         Size: ${massToSize(m2).toFixed(1)} px<br>
         KE: ${kinetic2.toFixed(2)} J<br>
         <br>
         <strong>Total Energy</strong><br>
         KE: ${totalKinetic.toFixed(2)} J<br>
+        <br>
+        <strong>Total Momentum</strong><br>
+        Momentum: ${totalMomentum.toFixed(2)} kg·m/s<br>
         <br>
         <strong>Collisions</strong><br>
         Count: ${collisionCount}<br>

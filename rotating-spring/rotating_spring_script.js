@@ -281,6 +281,7 @@ function updateStats() {
         <strong>Motion</strong><br>
         Angular Speed: ${angularSpeed.toFixed(2)} rad/s<br>
         Tangential Velocity: ${tangentialVelocity.toFixed(2)} m/s<br>
+        Momentum: ${momentum.toFixed(2)} kg·m/s<br>
         Angle: ${(spring.angle * 180 / Math.PI).toFixed(1)}°<br>
         <br>
         <strong>Energy</strong><br>
