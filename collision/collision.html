@@ -22,6 +22,17 @@
   </div>
 </div>
 
+<div id="graphs-container" style="display: none;">
+  <div class="graph-wrapper">
+    <h3 class="graph-title">Velocity vs Time</h3>
+    <canvas id="velocityGraph" width="800" height="300"></canvas>
+  </div>
+  <div class="graph-wrapper">
+    <h3 class="graph-title">Position vs Time</h3>
+    <canvas id="positionGraph" width="800" height="300"></canvas>
+  </div>
+</div>
+
 <div id="controls">
   <div class="control-row">
     <label for="blockSize">Stationary Block Mass:</label>
@@ -70,6 +81,10 @@
 
   <div class="button-row">
     <button onclick="resetSimulation()">Reset</button>
+  </div>
+
+  <div class="button-row">
+    <button id="toggleGraphsBtn" onclick="toggleGraphs()">Show Graphs</button>
   </div>
 </div>
 

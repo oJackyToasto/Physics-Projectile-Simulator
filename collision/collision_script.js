@@ -11,6 +11,7 @@ let isRunning = false;
 let animationId = null;
 let frameCount = 0;
 let statsEnabled = false;
+let graphsEnabled = false;
 
 // Parameters
 // Density constant: kg per pixel^2 (for visual representation)
@@ -52,10 +53,26 @@ let movingBlock = {
 
 let collisionCount = 0;
 
+// Graph data
+let graphData = {
+    time: [],
+    movingVelocity: [],
+    stationaryVelocity: [],
+    movingPosition: [],
+    stationaryPosition: []
+};
+let graphStartTime = 0;
+
 // ------------------ ELEMENTS ------------------
 const statsDiv = document.getElementById("stats");
 const toggleStatsBtn = document.getElementById("toggleStatsBtn");
 const toggleForceBtn = document.getElementById("toggleForceBtn");
+let toggleGraphsBtn;
+let graphsContainer;
+let velocityGraphCanvas;
+let positionGraphCanvas;
+let velocityGraphCtx;
+let positionGraphCtx;
 
 const blockSizeSlider = document.getElementById("blockSize");
 const movingBlockSizeSlider = document.getElementById("movingBlockSize");
@@ -294,6 +311,304 @@ function drawFrame() {
     drawInfo();
 }
 
+// ------------------ GRAPHS ------------------
+function addGraphData() {
+    if (!graphsEnabled) return;
+    
+    const currentTime = Date.now();
+    if (graphStartTime === 0) {
+        graphStartTime = currentTime;
+    }
+    
+    const time = (currentTime - graphStartTime) / 1000; // Convert to seconds
+    
+    // Add data points for this frame.
+    // We no longer trim old points so that the full history
+    // from t = 0 to the end of the run is preserved, even
+    // for long runs at slow simulation speeds.
+    graphData.time.push(time);
+    graphData.movingVelocity.push(movingBlock.v);
+    graphData.stationaryVelocity.push(stationaryBlock.v);
+    graphData.movingPosition.push(movingBlock.x);
+    graphData.stationaryPosition.push(stationaryBlock.x);
+}
+
+function drawVelocityGraph() {
+    if (!graphsEnabled || graphData.time.length === 0 || !velocityGraphCtx) return;
+    
+    const ctx = velocityGraphCtx;
+    const width = velocityGraphCanvas.width;
+    const height = velocityGraphCanvas.height;
+    const padding = 50;
+    const graphWidth = width - 2 * padding;
+    const graphHeight = height - 2 * padding;
+    
+    // Clear canvas
+    ctx.fillStyle = "#1e1e2e";
+    ctx.fillRect(0, 0, width, height);
+    
+    // Find min/max velocities for scaling
+    const allVelocities = [...graphData.movingVelocity, ...graphData.stationaryVelocity];
+    const minVel = Math.min(...allVelocities, -10);
+    const maxVel = Math.max(...allVelocities, 10);
+    const velRange = maxVel - minVel || 1;
+    
+    // Find time range
+    const minTime = graphData.time[0] || 0;
+    const maxTime = graphData.time[graphData.time.length - 1] || 1;
+    const timeRange = maxTime - minTime || 1;
+    
+    // Draw axes
+    ctx.strokeStyle = "#89b4fa";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Draw grid lines
+    ctx.strokeStyle = "#45475a";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = padding + (graphHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    for (let i = 0; i <= 5; i++) {
+        const x = padding + (graphWidth / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, height - padding);
+        ctx.stroke();
+    }
+    
+    // Draw zero line
+    if (minVel < 0 && maxVel > 0) {
+        const zeroY = height - padding - ((0 - minVel) / velRange) * graphHeight;
+        ctx.strokeStyle = "#555";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(padding, zeroY);
+        ctx.lineTo(width - padding, zeroY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    
+    // Draw moving block velocity
+    if (graphData.time.length > 1) {
+        ctx.strokeStyle = "#f38ba8";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < graphData.time.length; i++) {
+            const x = padding + ((graphData.time[i] - minTime) / timeRange) * graphWidth;
+            const y = height - padding - ((graphData.movingVelocity[i] - minVel) / velRange) * graphHeight;
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+    
+    // Draw stationary block velocity
+    if (graphData.time.length > 1) {
+        ctx.strokeStyle = "#cdd6f4";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < graphData.time.length; i++) {
+            const x = padding + ((graphData.time[i] - minTime) / timeRange) * graphWidth;
+            const y = height - padding - ((graphData.stationaryVelocity[i] - minVel) / velRange) * graphHeight;
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+    
+    // Draw labels
+    ctx.fillStyle = "#89b4fa";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Time (s)", width / 2, height - 10);
+    
+    ctx.save();
+    ctx.translate(15, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("Velocity (m/s)", 0, 0);
+    ctx.restore();
+    
+    // Draw legend
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#f38ba8";
+    ctx.fillText("Moving Block", width - padding - 100, padding + 15);
+    ctx.fillStyle = "#cdd6f4";
+    ctx.fillText("Stationary Block", width - padding - 100, padding + 30);
+    
+    // Draw scale values
+    ctx.fillStyle = "#cdd6f4";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "right";
+    for (let i = 0; i <= 5; i++) {
+        const vel = minVel + (velRange / 5) * (5 - i);
+        const y = padding + (graphHeight / 5) * i;
+        ctx.fillText(vel.toFixed(1), padding - 5, y + 4);
+    }
+    ctx.textAlign = "center";
+    for (let i = 0; i <= 5; i++) {
+        const time = minTime + (timeRange / 5) * i;
+        const x = padding + (graphWidth / 5) * i;
+        ctx.fillText(time.toFixed(1), x, height - padding + 15);
+    }
+}
+
+function drawPositionGraph() {
+    if (!graphsEnabled || graphData.time.length === 0 || !positionGraphCtx) return;
+    
+    const ctx = positionGraphCtx;
+    const width = positionGraphCanvas.width;
+    const height = positionGraphCanvas.height;
+    const padding = 50;
+    const graphWidth = width - 2 * padding;
+    const graphHeight = height - 2 * padding;
+    
+    // Clear canvas
+    ctx.fillStyle = "#1e1e2e";
+    ctx.fillRect(0, 0, width, height);
+    
+    // Find min/max positions for scaling
+    const allPositions = [...graphData.movingPosition, ...graphData.stationaryPosition];
+    const minPos = Math.min(...allPositions, 0);
+    const maxPos = Math.max(...allPositions, canvas.width);
+    const posRange = maxPos - minPos || 1;
+    
+    // Find time range
+    const minTime = graphData.time[0] || 0;
+    const maxTime = graphData.time[graphData.time.length - 1] || 1;
+    const timeRange = maxTime - minTime || 1;
+    
+    // Draw axes
+    ctx.strokeStyle = "#89b4fa";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Draw grid lines
+    ctx.strokeStyle = "#45475a";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+        const y = padding + (graphHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    for (let i = 0; i <= 5; i++) {
+        const x = padding + (graphWidth / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, height - padding);
+        ctx.stroke();
+    }
+    
+    // Draw moving block position
+    if (graphData.time.length > 1) {
+        ctx.strokeStyle = "#f38ba8";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < graphData.time.length; i++) {
+            const x = padding + ((graphData.time[i] - minTime) / timeRange) * graphWidth;
+            const y = height - padding - ((graphData.movingPosition[i] - minPos) / posRange) * graphHeight;
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+    
+    // Draw stationary block position
+    if (graphData.time.length > 1) {
+        ctx.strokeStyle = "#cdd6f4";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < graphData.time.length; i++) {
+            const x = padding + ((graphData.time[i] - minTime) / timeRange) * graphWidth;
+            const y = height - padding - ((graphData.stationaryPosition[i] - minPos) / posRange) * graphHeight;
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+    
+    // Draw labels
+    ctx.fillStyle = "#89b4fa";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Time (s)", width / 2, height - 10);
+    
+    ctx.save();
+    ctx.translate(15, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("Position (px)", 0, 0);
+    ctx.restore();
+    
+    // Draw legend
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#f38ba8";
+    ctx.fillText("Moving Block", width - padding - 100, padding + 15);
+    ctx.fillStyle = "#cdd6f4";
+    ctx.fillText("Stationary Block", width - padding - 100, padding + 30);
+    
+    // Draw scale values
+    ctx.fillStyle = "#cdd6f4";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "right";
+    for (let i = 0; i <= 5; i++) {
+        const pos = minPos + (posRange / 5) * (5 - i);
+        const y = padding + (graphHeight / 5) * i;
+        ctx.fillText(pos.toFixed(0), padding - 5, y + 4);
+    }
+    ctx.textAlign = "center";
+    for (let i = 0; i <= 5; i++) {
+        const time = minTime + (timeRange / 5) * i;
+        const x = padding + (graphWidth / 5) * i;
+        ctx.fillText(time.toFixed(1), x, height - padding + 15);
+    }
+}
+
+function toggleGraphs() {
+    graphsEnabled = !graphsEnabled;
+    if (toggleGraphsBtn) {
+        toggleGraphsBtn.textContent = graphsEnabled ? "Hide Graphs" : "Show Graphs";
+    }
+    if (graphsContainer) {
+        graphsContainer.style.display = graphsEnabled ? "flex" : "none";
+    }
+    
+    // When turning graphs on/off, keep existing data so the last run
+    // remains visible until a new run starts.
+    if (graphsEnabled) {
+        drawVelocityGraph();
+        drawPositionGraph();
+    }
+}
+
 // ------------------ STATS ------------------
 function updateStats() {
     if (!statsEnabled) return;
@@ -350,6 +665,9 @@ function runAnimation() {
     
     if (isRunning) {
         updatePhysics(dt);
+        if (graphsEnabled) {
+            addGraphData();
+        }
     }
     
     drawFrame();
@@ -358,12 +676,32 @@ function runAnimation() {
         if (frameCount % 3 === 0) updateStats();
     }
     
+    if (graphsEnabled) {
+        if (frameCount % 2 === 0) { // Update graphs every other frame for performance
+            drawVelocityGraph();
+            drawPositionGraph();
+        }
+    }
+    
     animationId = requestAnimationFrame(runAnimation);
 }
 
 function toggleSimulation() {
+    const wasRunning = isRunning;
     isRunning = !isRunning;
     if (isRunning) {
+        // Starting a new run: clear graph data so the new run
+        // draws from t = 0 onward.
+        if (!wasRunning && graphsEnabled) {
+            graphData = {
+                time: [],
+                movingVelocity: [],
+                stationaryVelocity: [],
+                movingPosition: [],
+                stationaryPosition: []
+            };
+            graphStartTime = 0;
+        }
         document.getElementById("runBtn").textContent = "Pause";
     } else {
         document.getElementById("runBtn").textContent = "Run";
@@ -510,6 +848,18 @@ toggleForceBtn.addEventListener("click", () => {
 
 // ------------------ INIT ------------------
 window.onload = () => {
+    // Initialize graph elements
+    toggleGraphsBtn = document.getElementById("toggleGraphsBtn");
+    graphsContainer = document.getElementById("graphs-container");
+    velocityGraphCanvas = document.getElementById("velocityGraph");
+    positionGraphCanvas = document.getElementById("positionGraph");
+    if (velocityGraphCanvas) {
+        velocityGraphCtx = velocityGraphCanvas.getContext("2d");
+    }
+    if (positionGraphCanvas) {
+        positionGraphCtx = positionGraphCanvas.getContext("2d");
+    }
+    
     syncLabels();
     // Initially hide force and friction sliders
     if (forceSliderRow) {
@@ -525,4 +875,5 @@ window.onload = () => {
 // Expose functions
 window.toggleSimulation = toggleSimulation;
 window.resetSimulation = resetSimulation;
+window.toggleGraphs = toggleGraphs;
 
